@@ -1,0 +1,5 @@
+timer.dat
+*.pyc
+*.egg*
+__pychache__
+.pytest*
