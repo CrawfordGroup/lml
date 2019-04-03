@@ -7,17 +7,17 @@ import matplotlib
 import matplotlib.pyplot as plt
 import random
 
-def do_krr(M=12,N=200,s=0.2,la=0):# {{{
+def do_krr(M=12,N=200,st=0.05,s=11,l=0):# {{{
     '''
     kernel ridge regression with M training points and N total representations
     s used as the stdv for gaussian kernel generation
     s=0.05 will learn nothing, but match training points exactly (k too small)
-    la used for ridge regression
+    l used for ridge regression
     need another optional s_t to push into the TATR generation...
     '''
     bas = "def2-TZVP"
 #    bas = "dz"
-    l = np.linspace(0.5,2,N) # N evenly-spaced representations on the PES
+    pes = np.linspace(0.5,2,N) # N evenly-spaced representations on the PES
 
 #    ### TEST N2 TATR #### {{{
 #    geom = """
@@ -34,49 +34,37 @@ def do_krr(M=12,N=200,s=0.2,la=0):# {{{
     for i in range(0,N):
         geom = """
             H
-            H 1 """ + str(l[i]) + """
+            H 1 """ + str(pes[i]) + """
             symmetry c1
         """
         mol = mesp.Molecule('H2',geom,bas)
-        tatr = make_tatr(mol)
+        tatr = make_tatr(mol,150,st)
         tatr_list.append(tatr)
         E_list.append(mol.E_CCSD)# }}}
 
-    # generate the training set and save their positions
+    # generate the training set and save their positions# {{{
     trainers = gen_train(tatr_list, M, graph=False) 
-    t_pos = [l[i] for i in trainers]
+    t_pos = [pes[i] for i in trainers]
 
-    # make the K-trainer matrix
-    K = np.zeros((M,M))
-    for i in range(0,M):
-        for j in range(0,M):
-            K[i][j] = make_k(tatr_list[i],tatr_list[j],s)
-    
-    # grab the real answers and solve for alpha
-    Y = []
-    for i in range(0,M):
-        Y.append(E_list[trainers[i]])
-    alpha = solve_alpha(K,Y)
+    t_tatr = [] # training TATRs
+    t_E = [] # training energies
+    for i in trainers:
+        t_tatr.append(tatr_list[i])
+        t_E.append(E_list[i])# }}}
 
-    # make the full k matrix [k(train,predict)]
-    k = []
-    for i in range(0,N):
-        k.append([])
-        for j in range(0,M):
-            k[i].append(make_k(tatr_list[trainers[j]],tatr_list[i],s))
+    # train for alpha
+    alpha = train(t_tatr,t_E,s,l)
 
-    # predict energy for the entire PES
-    pred_E_list = [] # 
-    for i in range(0,N):
-        pred_E_list.append(np.dot(alpha,k[i]))
+    # predict E across the PES
+    pred_E_list = pred(tatr_list,t_tatr,alpha,s,l)
 
+    # plot# {{{
     E_list = np.asarray(E_list)
     pred_E_list = np.asarray(pred_E_list)
 
-    # plot# {{{
     plt.figure(1)
-    plt.plot(l,E_list,'b-o',label='PES')
-    plt.plot(l,pred_E_list,'r-',label='ML-{}'.format(M))
+    plt.plot(pes,E_list,'b-o',label='PES')
+    plt.plot(pes,pred_E_list,'r^',ms=2,label='ML-{}'.format(M))
     plt.plot(t_pos,[-1.18 for i in range(0,len(t_pos))],'go',label='Training points')
     plt.axis([0.25,2.0,-2.5,-0.8])
     plt.xlabel('r/Angstrom')
@@ -92,7 +80,7 @@ def gaus(x, u, s):# {{{
     '''
     return np.exp(-(x-u)**2 / (2.0*s**2))# }}}
 
-def make_tatr(mol,x=150,s=0.05,graph=False):# {{{
+def make_tatr(mol,x=150,st=0.05,graph=False):# {{{
     '''
     make t-amp tensor representation
     pass in a mesp molecule and (optional) the number of points
@@ -124,9 +112,9 @@ def make_tatr(mol,x=150,s=0.05,graph=False):# {{{
         val1 = 0
         val2 = 0
         for t_1 in range(0,len(t1)):
-            val1 += gaus(x_list[i],t1[t_1],s)
+            val1 += gaus(x_list[i],t1[t_1],st)
         for t_2 in range(0,len(t2)):
-            val2 += gaus(x_list[i],t2[t_2],s)
+            val2 += gaus(x_list[i],t2[t_2],st)
         tatr1.append(val1)
         tatr2.append(val2)
 #        tatr.append(np.concatenate((tatr1,tatr2),axis=None))
@@ -218,7 +206,6 @@ def make_k(tatr1, tatr2, s):# {{{
     return a gaussian kernel from two TATRs
     '''
     tmp = la.norm(tatr1 - tatr2)
-    print("norm = {}".format(tmp))
     return np.exp(-1 * tmp**2 / (2.0*s**2))# }}}
 
 def solve_alpha(K,Y,l=0):# {{{
@@ -229,18 +216,81 @@ def solve_alpha(K,Y,l=0):# {{{
     '''
     return la.solve((K-l*np.eye(len(Y))),Y)# }}}
 
-def cross_validate(f_data,k):
+def train(x,y,s=0.05,l=0):# {{{
+    '''
+    optimize parameter(s) "a" by solving linear equations
+    given x (training TATRs) and y (training energies)
+    optional kernel width s, regularization term la
+    return a
+    '''
+    # make the trainer-k matrix
+    M = len(x)
+    k = np.zeros((M,M))
+    for i in range(0,M):
+        for j in range(0,M):
+            k[i][j] = make_k(x[i],x[j],s)
+
+    # solve for a
+    a = solve_alpha(k,y,l)
+
+    return a# }}}
+
+def pred(x,xt,a,s=0.05,l=0):# {{{
+    '''
+    predict answers "Y" across entire PES
+    given x (full set of TATRs), xt (training TATRs), and a (alpha)
+    optional kernel width s, regularization term l
+    return Y 
+    '''
+    N = len(x)
+    M = len(xt)
+
+    # make the full k matrix [k(train,predict)]
+    k = np.zeros((N,M))
+    for i in range(0,N):
+        for j in range(0,M):
+            k[i][j] = make_k(xt[j],x[i],s)
+
+    # predict energy for the entire PES
+    Y = [] # 
+    for i in range(0,N):
+        Y.append(np.dot(a,k[i]))
+    
+    return Y# }}}
+
+def loss():
+    pass
+
+def cross_validate(x_data,y_data,k):# {{{
     '''
     k-fold cross validation: k folds, one is kept for validation
     "rotate" folds, re-validate, repeat to finish
-    return average error
+    given x and y values to regress
+    return average error and predicted values + their errors for each fold 
+    may also want to return the parameter (a)...
     '''
     # split full data into k folds
-    f_data = np.split(f_data,k) 
+    y_data = np.array_split(y_data,k) 
+    x_data = np.array_split(x_data,k) 
 
-    
+    # pop out validation set, train/validate, repeat
+    y_p_list = [] # predicted values
+    mse_list = [] # mean squared errors
+    for val in range(0,k): # loop over validation sets
+        tr_y = copy.deepcopy(y_data) # copy full data set
+        tr_x = copy.deepcopy(x_data)
+        val_y = tr_y.pop(val) # pop out the validation set
+        val_x = tr_x.pop(val)
+        tr_y = np.concatenate(tr_y) # re-form training set
+        tr_x = np.concatenate(tr_x) 
 
-    return 0
+        y, a, mse = train(tr_x,tr_y) # train using training set
+        y_p = pred(val_x,a) # predict validation set
+        l, mse = loss(val_y,y_p,val_x) # calculate loss
+        y_p_list.append(y_p) # save the answers
+        mse_list.append(mse) # save the error
+
+    return np.mean(mse_list), y_p_list, mse_list# }}}
 
 if __name__ == "__main__":
     do_krr()
