@@ -6,12 +6,12 @@ import mesp
 import matplotlib
 import matplotlib.pyplot as plt
 import random
+import copy
 
-def do_krr(M=12,N=200,st=0.05,s=11,l=0):# {{{
+def do_krr(M=12,N=50,st=0.05,s=5,l=0):# {{{
     '''
     kernel ridge regression with M training points and N total representations
     s used as the stdv for gaussian kernel generation
-    s=0.05 will learn nothing, but match training points exactly (k too small)
     l used for ridge regression
     need another optional s_t to push into the TATR generation...
     '''
@@ -52,13 +52,79 @@ def do_krr(M=12,N=200,st=0.05,s=11,l=0):# {{{
         t_tatr.append(tatr_list[i])
         t_E.append(E_list[i])# }}}
 
+    # k-fold cross-validation to tune s
+    k = M
+    step = 100
+    max_it = 500
+#    grad_conv = 1E-16 
+    grad_conv = 1E-6
+    s_new = s+1
+    s_list = [s,s_new]
+
+    l_new = l+(l*0.5)
+    l_list = [l,l_new]
+
+    cv_error = []
+    cv_error_old, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l)
+    cv_error = np.append(cv_error,cv_error_old)
+
+#    cv_error = [[],[]]
+#    cv_error_s_old, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l)
+#    cv_error_l_old, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l)
+#    tmp1 = np.append(cv_error[0],[cv_error_s_old],axis=0)
+#    tmp2 = np.append(cv_error[1],[cv_error_l_old],axis=0)
+#    cv_error = np.concatenate(([tmp1],[tmp2]))
+#    print("first cv_error: {}".format(cv_error))
+    for it in range(1,max_it+1):
+        cv_error_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s_new,l)
+        cv_error = np.append(cv_error,cv_error_new)
+
+#        cv_error_s_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s_new,l)
+#        cv_error_l_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l_new)
+#        tmp1 = np.append(cv_error[0],[cv_error_s_new],axis=0)
+#        tmp2 = np.append(cv_error[1],[cv_error_l_new],axis=0)
+#        cv_error = np.concatenate(([tmp1],[tmp2]))
+#        print("next cv_error: {}".format(cv_error))
+
+        grad = np.gradient(cv_error,s_list)
+        abs_grad = [abs(i) for i in grad]
+
+#        grad = np.gradient(cv_error,s_list,l_list)
+#        print(grad)
+#        abs_grad = np.asarray([abs(i) for i in grad])
+#        abs_grad = abs_grad.ravel()
+#        print(min(abs_grad))
+
+        if min(abs_grad) < grad_conv:
+            print("converged in {} iterations".format(it))
+            print("s value: {}".format(s_new))
+#            print("l value: {}".format(l_new))
+            print("l value: {}".format(l))
+            #print("CV error: {}".format(cv_error_new))
+            break
+        elif it == max_it:
+            print("too many iterations")
+            print("s value: {}".format(s_new))
+            print("l value: {}".format(l))
+#            print("l value: {}".format(l_new))
+            #print("CV error: {}".format(cv_error_new))
+            break
+        else:
+            s = s_new
+            s_new = s - step*grad[-1]
+#            s_new = s - step*grad[0][-1]
+            s_list.append(s_new)
+#            l = l_new
+#            l_new = l - step*grad[0][-1]
+#            l_list.append(l_new)
+
     # train for alpha
-    alpha = train(t_tatr,t_E,s,l)
+    alpha = train(t_tatr,t_E,s_new,l)
 
     # predict E across the PES
-    pred_E_list = pred(tatr_list,t_tatr,alpha,s,l)
+    pred_E_list = pred(tatr_list,t_tatr,alpha,s_new,l)
 
-    # plot# {{{
+    # plot
     E_list = np.asarray(E_list)
     pred_E_list = np.asarray(pred_E_list)
 
@@ -70,7 +136,7 @@ def do_krr(M=12,N=200,st=0.05,s=11,l=0):# {{{
     plt.xlabel('r/Angstrom')
     plt.ylabel('Energy/E_h')
     plt.legend()
-    plt.show()# }}}
+    plt.show()
     # }}}
 
 def gaus(x, u, s):# {{{
@@ -258,14 +324,20 @@ def pred(x,xt,a,s=0.05,l=0):# {{{
     
     return Y# }}}
 
-def loss():
-    pass
+def loss(y,y_p):# {{{
+    '''
+    Calculate L2 (squared) loss, return mean squared error
+    given true and predicted values
+    '''
+    l = [(y[i] - y_p[i])**2 for i in range(len(y))]
+    return (sum(l)/len(y))# }}}
 
-def cross_validate(x_data,y_data,k):# {{{
+def cross_validate(x_data,y_data,k,s=0.05,l=0):# {{{
     '''
     k-fold cross validation: k folds, one is kept for validation
     "rotate" folds, re-validate, repeat to finish
-    given x and y values to regress
+    given x and y values to regress, number of folds k
+    s and l hyperparameters (kernel width and regularization)
     return average error and predicted values + their errors for each fold 
     may also want to return the parameter (a)...
     '''
@@ -284,9 +356,9 @@ def cross_validate(x_data,y_data,k):# {{{
         tr_y = np.concatenate(tr_y) # re-form training set
         tr_x = np.concatenate(tr_x) 
 
-        y, a, mse = train(tr_x,tr_y) # train using training set
-        y_p = pred(val_x,a) # predict validation set
-        l, mse = loss(val_y,y_p,val_x) # calculate loss
+        a = train(tr_x,tr_y,s,l) # train using training set
+        y_p = pred(val_x,tr_x,a,s,l) # predict validation set
+        mse = loss(val_y,y_p) # calculate loss
         y_p_list.append(y_p) # save the answers
         mse_list.append(mse) # save the error
 
