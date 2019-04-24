@@ -16,7 +16,8 @@ def gradient(loss, pred, x, dx, ins, outs) :
         for i in range(len(x)) :
             # Use 2 stencil points for better accuracy.
             change1 = [x[j] + (dx[j] if i == j else 0) for j in range(len(x))]
-            change2 = [x[j] + (2 * dx[j] if i == j else 0) for j in range(len(x))]
+            change2 = [x[j] + (2 * dx[j] if i == j else 0) for j in
+                       range(len(x))]
             ys1 = [pred(i, change1) for i in ins]
             ys2 = [pred(i, change2) for i in ins]
             l1 = loss(outs, ys1)[1]
@@ -51,7 +52,6 @@ def train(x, y, pred, loss, w_start, max_iter=100, step=0.01, grad_conv=0.01) :
 
     w = np.array(w_start)
     w_list = [w]
-    print(x)
     y_p_list = []
 
     mse_list = []
@@ -61,7 +61,8 @@ def train(x, y, pred, loss, w_start, max_iter=100, step=0.01, grad_conv=0.01) :
         y_p = [pred(x_i, w) for x_i in x]
         l, mse = loss(y, y_p)
         mse_list.append(mse)
-        grad = gradient(loss, pred, w, [step for i in range(len(w_start))], x, y)
+        grad = gradient(loss, pred, w, [step for i in range(len(w_start))],
+                        x, y)
         abs_grad = [np.linalg.norm(g) for g in grad]
         if min(abs_grad) < grad_conv :
             print("Converged in %d iterations."%(it))
@@ -71,9 +72,11 @@ def train(x, y, pred, loss, w_start, max_iter=100, step=0.01, grad_conv=0.01) :
         else :
             w = w - step * grad
             w_list.append(w)
-    raise(RuntimeError("Too many iterations!\nw value: {}\nmse: {}".format(w, mse)))
+    raise(RuntimeError(
+        "Too many iterations!\nw value: {}\nmse: {}".format(w, mse)))
 
-def cross_validation(xs, ys, k, pred, loss, params) :
+def cross_validation(xs, ys, k, pred, loss, params,
+                     max_iter=100, step=0.01, grad_conv=0.01) :
     """
     Teach a regression using cross validation.
     xs: List of x values/vectors.
@@ -98,7 +101,8 @@ def cross_validation(xs, ys, k, pred, loss, params) :
         val_y = train_y.pop()
         train_x = np.concatenate(train_x)
         train_y = np.concatenate(train_y)
-        y, w, mse = train(train_x, train_y, pred, loss, w_last, 1000, 0.001)
+        y, w, mse = train(train_x, train_y, pred, loss, w_last,
+                          max_iter, step, grad_conv)
         y_p = [pred(val_x_i, w) for val_x_i in val_x]
         l, mse = loss(val_y, y_p)
         y_p_list.append(y_p)
