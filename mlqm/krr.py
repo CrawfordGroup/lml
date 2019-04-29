@@ -8,15 +8,15 @@ import matplotlib.pyplot as plt
 import random
 import copy
 
-def do_krr(M=12,N=50,st=0.05,s=5,l=0):# {{{
+def do_krr(M=12,N=50,st=0.05,s=5,l=0.0005,K=30):# {{{
     '''
     kernel ridge regression with M training points and N total representations
+    st used for tatr generation
     s used as the stdv for gaussian kernel generation
     l used for ridge regression
-    need another optional s_t to push into the TATR generation...
+    K repeated k-means algorithms, best clustering chosen
     '''
     bas = "def2-TZVP"
-#    bas = "dz"
     pes = np.linspace(0.5,2,N) # N evenly-spaced representations on the PES
 
 #    ### TEST N2 TATR #### {{{
@@ -30,7 +30,9 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0):# {{{
 
     # generate the total data set # {{{
     tatr_list = [] # hold TATRs
-    E_list = [] # hold E
+#    E_list = [] # hold E
+    E_CCSD_CORR_list = [] # hold CCSD correlation energy
+    E_SCF_list = [] # hold SCF energy
     for i in range(0,N):
         geom = """
             H
@@ -40,24 +42,30 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0):# {{{
         mol = mesp.Molecule('H2',geom,bas)
         tatr = make_tatr(mol,150,st)
         tatr_list.append(tatr)
-        E_list.append(mol.E_CCSD)# }}}
+#        E_list.append(mol.E_CCSD)
+        E_CCSD_CORR_list.append(mol.E_CCSD_CORR)
+        E_SCF_list.append(mol.E_SCF)# }}}
+
+    E_CCSD_CORR_avg = np.mean(E_CCSD_CORR_list)
+    E_CCSD_CORR_list = np.subtract(E_CCSD_CORR_list,E_CCSD_CORR_avg)
 
     # generate the training set and save their positions# {{{
-    trainers = gen_train(tatr_list, M, graph=False) 
+    print("Generating training set . . .")
+    trainers = gen_train(tatr_list, M, K) 
     t_pos = [pes[i] for i in trainers]
 
     t_tatr = [] # training TATRs
     t_E = [] # training energies
     for i in trainers:
         t_tatr.append(tatr_list[i])
-        t_E.append(E_list[i])# }}}
+        t_E.append(E_CCSD_CORR_list[i])# }}}
 
     # k-fold cross-validation to tune s
+    print("Cross-validating s . . .")
     k = M
     step = 100
-    max_it = 500
-#    grad_conv = 1E-16 
-    grad_conv = 1E-6
+    max_it = 1000
+    grad_conv = 1E-5 
     s_new = s+1
     s_list = [s,s_new]
 
@@ -68,55 +76,32 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0):# {{{
     cv_error_old, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l)
     cv_error = np.append(cv_error,cv_error_old)
 
-#    cv_error = [[],[]]
-#    cv_error_s_old, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l)
-#    cv_error_l_old, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l)
-#    tmp1 = np.append(cv_error[0],[cv_error_s_old],axis=0)
-#    tmp2 = np.append(cv_error[1],[cv_error_l_old],axis=0)
-#    cv_error = np.concatenate(([tmp1],[tmp2]))
-#    print("first cv_error: {}".format(cv_error))
     for it in range(1,max_it+1):
         cv_error_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s_new,l)
         cv_error = np.append(cv_error,cv_error_new)
 
-#        cv_error_s_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s_new,l)
-#        cv_error_l_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s,l_new)
-#        tmp1 = np.append(cv_error[0],[cv_error_s_new],axis=0)
-#        tmp2 = np.append(cv_error[1],[cv_error_l_new],axis=0)
-#        cv_error = np.concatenate(([tmp1],[tmp2]))
-#        print("next cv_error: {}".format(cv_error))
 
         grad = np.gradient(cv_error,s_list)
         abs_grad = [abs(i) for i in grad]
 
-#        grad = np.gradient(cv_error,s_list,l_list)
-#        print(grad)
-#        abs_grad = np.asarray([abs(i) for i in grad])
-#        abs_grad = abs_grad.ravel()
-#        print(min(abs_grad))
 
         if min(abs_grad) < grad_conv:
             print("converged in {} iterations".format(it))
             print("s value: {}".format(s_new))
-#            print("l value: {}".format(l_new))
-            print("l value: {}".format(l))
+            print("l value: {}".format(l)) # s-only learning
             #print("CV error: {}".format(cv_error_new))
             break
         elif it == max_it:
             print("too many iterations")
             print("s value: {}".format(s_new))
-            print("l value: {}".format(l))
-#            print("l value: {}".format(l_new))
-            #print("CV error: {}".format(cv_error_new))
+            print("l value: {}".format(l)) # s-only learning
             break
         else:
             s = s_new
-            s_new = s - step*grad[-1]
-#            s_new = s - step*grad[0][-1]
+            s_new = s - step*grad[-1] # s-only learning
             s_list.append(s_new)
-#            l = l_new
-#            l_new = l - step*grad[0][-1]
-#            l_list.append(l_new)
+
+    print("final error (before prediction): {}".format(cv_error_new))
 
     # train for alpha
     alpha = train(t_tatr,t_E,s_new,l)
@@ -125,16 +110,22 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0):# {{{
     pred_E_list = pred(tatr_list,t_tatr,alpha,s_new,l)
 
     # plot
-    E_list = np.asarray(E_list)
+    E_CCSD_CORR_list = np.asarray(E_CCSD_CORR_list)
+    E_CCSD_CORR_list = np.add(E_CCSD_CORR_list,E_CCSD_CORR_avg)
+    E_SCF_list = np.asarray(E_SCF_list)
+    E_list = np.add(E_CCSD_CORR_list,E_SCF_list)
     pred_E_list = np.asarray(pred_E_list)
+    pred_E_list = np.add(pred_E_list,E_CCSD_CORR_avg)
+    pred_E_list = np.add(pred_E_list,E_SCF_list)
 
     plt.figure(1)
-    plt.plot(pes,E_list,'b-o',label='PES')
-    plt.plot(pes,pred_E_list,'r^',ms=2,label='ML-{}'.format(M))
+    plt.plot(pes,E_list,'b-o',label='CCSD PES')
+    plt.plot(pes,E_SCF_list,'y-',label='SCF')
+    plt.plot(pes,pred_E_list,'r^',ms=2,label='CCSD/ML-{}'.format(M))
     plt.plot(t_pos,[-1.18 for i in range(0,len(t_pos))],'go',label='Training points')
     plt.axis([0.25,2.0,-2.5,-0.8])
     plt.xlabel('r/Angstrom')
-    plt.ylabel('Energy/E_h')
+    plt.ylabel('Energy/$E_h$')
     plt.legend()
     plt.show()
     # }}}
@@ -203,69 +194,108 @@ def make_tatr(mol,x=150,st=0.05,graph=False):# {{{
         plt.show()
     return np.asarray(tatr)# }}}
 
-def gen_train(tatr_list,M,cen_conv=1e-12,max_iter=20,graph=False):# {{{
+def cluster(pts,M,cens):# {{{
     '''
-    Generate a training set by the k-means algorithm
-    Try to converge the centers before max_iter
+    Assign each point in pts to one of M clusters centered on cens
+    Return the cluster-point maps and the point-center differences
     '''
-    print("Generating training set . . .")
-#    print("Total data set: {}".format(tatr_list))
-    trainers = random.sample(range(0,len(tatr_list)),M)
-#    print("Initial trainer indices: {}".format(trainers))
+    diffs = [[] for _ in range(M)] # [[cluster 1: pt1 diff, pt2 diff, . . .],[cluster 2: pt1 diff, . . .]]
+    maps = [[] for _ in range(M)] # [[cluster 1: (pt,#), . . .],[cluster 2: (pt,#), . . .]]
+    for i in range(0,len(pts)): # loop over points
+        for j in range(0,len(cens)): # loop over centers
+            diff = la.norm(pts[i] - cens[j]) # norm of diff btwn point and center
+            if j==0: # first center is always "closest" to pt
+                cnt = 0
+                old_diff = diff
+            elif abs(diff) < old_diff: # see if other centers are closer
+                cnt = j # if so, store the pt map
+                old_diff = diff # and keep track of the smallest diff
+        maps[cnt].append((pts[i],i)) # store the actual point, and its "number" in the list
+    return maps# }}}
 
-    # establish initial centers of clusters
-    centers = []
-    for i in range(0,M):
-        centers.append(tatr_list[trainers[i]])
-    centers = np.asarray(centers)
-    cen_diffs = [cen_conv + 1]
-#    print("Initial centers: {}".format(centers))
+def recenter(M,maps):# {{{
+    '''
+    Return centers (vector means) of each of the M cluster in maps
+    '''
+    new_cens = []
+    for cen in range(0,M):
+        cluster = [x[0] for x in maps[cen]]
+        new_cen = np.mean([x[0] for x in maps[cen]],axis=0)
+        new_cens.append(new_cen)
+    return np.asarray(new_cens)# }}}
 
-    # iterate re-centering
-    for _ in range(0,max_iter):
-        # determine mapping of TATRs to clusters 
-        t_map = [[] for __ in range(M)] # see map below
-        # [[cluster1: (tatr,#), (tatr,#), . . .],
-        #  [cluster2: (tatr,#), (tatr,#), . . .]]
-        diffs = [[] for __ in range(M)] # see map below
-        # [[cluster1: tatr1 dist, tatr2 dist, . . .], 
-        #  [cluster2: tatr1 dist, tatr2 dist, . . .]]
-        for i in range(0,len(tatr_list)): # loop over TATRs
-            for j in range(0,len(centers)): # loop over centers
-#                print("tatr_list[i]: {}\n\ncenters[j]: {}".format(tatr_list[i],centers[j]))
-#                print("len of tatr_list[i]: {}\nlen of centers[j]: {}".format(len(tatr_list[i]),len(centers[j])))
-                diff = la.norm(tatr_list[i] - centers[j]) # norm of diff btwn TATR & center
-                diffs[j].append(diff)
-                if j == 0: # first is always "closest" to start
-                    cnt = 0
-                    old_diff = diff
-                elif abs(diff) < old_diff: # then see if others are closer
-                    cnt = j # if so, store the TATR map
-                    old_diff = diff # and keep track of the smallest diff
-            t_map[cnt].append((tatr_list[i],i))
-        if graph:
-#            print("t_map for iter {}: {}".format(_,t_map))
-#            print("diffs for iter {}: {}".format(_,diffs))
-            for c in range(0,M):
-                print("Size of cluster {} in iter {}: {}".format(c,_,len(t_map[c])))
-    
-        if (_ >= 1) and (max(cen_diffs) <= cen_conv): # force one iteration
-            print("Converged training set in {} iterations!".format(_+1))
-#            print("Diffs: {}".format(diffs))
-            trainers = []
-            for train in range(0,M):
-                trainers.append(np.argmin(diffs[train]))
-#                print("Smallest diff in cluster {} is TATR {}".format(train,np.argmin(diffs[train])))
-            return trainers
+def k_means(pts,M):# {{{
+    '''
+    List of initial data points pts
+    Number of centers M
+    '''
+    points = random.sample(range(0,len(pts)),M)
+    cens = np.asarray([pts[points[i]] for i in range(0,M)])
+    maps = cluster(pts,M,cens)
+    diffs = [1]
+    while max(diffs) > 0:
+        new_cens = recenter(M,maps)
+        maps = cluster(pts,M,new_cens)
+                                                                            
+        diffs = [np.mean(cens[i] - new_cens[i]) for i in range(0,len(new_cens))]
+        diffs = np.absolute(diffs)
+        cens = new_cens
+    return np.asarray(maps)# }}}
 
-        # determine new centers and differences
-        cen_diffs = []
-        for cen in range(0,M):
-            new_cen = np.mean([x[0] for x in t_map[cen]],axis=0) # list comprehension of tuples
-#            print("Old axis: {}".format([x[0] for x in t_map[cen]]))
-            cen_diffs.append(np.mean(new_cen - centers[cen]))
-            centers[cen] = new_cen
-#        print("New centers for iter {}: {}".format(_,centers))# }}}
+def cen_err(maps):# {{{
+    '''
+    Take in the center->point map
+    Return the stddv of the mean center->point diffs
+    Also return the positions of the closest points to each center
+    '''
+    errors = []
+    close_pts = []
+    for i in range(0,len(maps)): # loop over centers
+        cen = np.mean([c[0] for c in maps[i]],axis=0) # mean of coords in center i
+        diffs = [] # hold diffs for center i
+        for j in range(0,len(maps[i])): # loop over points
+            diffs.append(la.norm(maps[i][j][0] - cen)) # norm of diff btwn point and cen
+        errors.append(np.mean(diffs)) # store the mean error for center i
+        close_pts.append(np.argmin(diffs)) # store the position of the closest point to center i
+    return np.std(errors), close_pts# }}}
+
+def k_means_loop(pts,M,K):# {{{
+    '''
+    Loop the k-means algorithm K times
+    Return the best clustered map and position of closest points to centers
+    '''
+    maps_list = [] # hold all the maps
+    errors = [] # hold all the errors
+    close_pts_list = [] # hold all the closest points
+    for i in range(0,K):
+        maps = k_means(pts,M)
+        maps_list.append(maps)
+        error, close_pts = cen_err(maps)
+        errors.append(error)
+        close_pts_list.append(close_pts)
+    best = np.argmin(errors) # lowest stdv of mean point-center diff is best
+    return maps_list[best], close_pts_list[best]# }}}
+
+def gen_train(tatr_list,M,K):# {{{
+    '''
+    Generate a training set given the list of TATRs and the number of training points
+    Converge the k-means algorithm K separate times, choose best clustering
+    Data points closest to cluster centers are chosen as trainers
+    '''
+    trainers = []
+    t_map, close_pts = k_means_loop(tatr_list,M,K)
+    print("close pts: {}".format(close_pts))
+    for train in range(0,M): # loop over centers, grab position of training points from each
+        print("center {}".format(train))
+        print("so it's pt {} in the t_map for center {}".format(close_pts[train],train))
+        check = t_map[train]
+        check2 = t_map[train][close_pts[train]]
+        trainers.append(t_map[train][close_pts[train]][1])
+        print("trainers: {}".format(trainers))
+#    t_map, diffs = k_means_loop(tatr_list,M,K)
+#    for train in range(0,M): # loop over the centers, find the closest point to each
+#        trainers.append(np.argmin(diffs[train]))
+    return trainers# }}}
 
 def make_k(tatr1, tatr2, s):# {{{
     '''
