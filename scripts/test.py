@@ -43,8 +43,8 @@ def main(**kwargs) :
     input2 = [[i // 10, i % 10] for i in range(0, 100)]
     input3 = list(range(10))
     input4 = [[i // 10, i % 10] for i in range(0, 100)]
-    
-    output0 = [i + 0.5 * (2 * rand.random() - 1) for i in input0]
+
+    output0 = [i if i < 7 else 2 * i for i in input0]
     output1 = [5 * i + 1 +
                2 * (2 * rand.random() - 1) for i in input1]
     output2 = [x[0] + 2 * x[1] + 3 +

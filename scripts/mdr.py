@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """
 mdr.py
 
@@ -11,6 +9,13 @@ or if needed, use mdr.train to train without cross validation.
 import math
 import numpy as np
 import copy
+
+# Compute the r-squared correlation value.
+def r2(y, ycalc) :
+    avg = sum(y) / len(y)
+    sum_res = sum((y[i] - ycalc[i]) ** 2 for i in range(len(y)))
+    sum_tot = sum((y[i] - avg) ** 2 for i in range(len(y)))
+    return (1 - sum_res / sum_tot)
 
 # Compute the gradient of the loss function.
 def gradient(loss, pred, x, dx, ins, outs) :
@@ -129,14 +134,17 @@ def cross_validation(xs, ys, k, pred, loss, w_start, **kwargs) :
     y_list = np.array_split(ys, k)
 
     w_last = w_start
+    w_list = []
+    mse_list = []
+    r2_list = []
     for val in range(0, k) :
         # Set up the training set
         train_x = copy.deepcopy(x_list)
         train_y = copy.deepcopy(y_list)
 
         # Remove values to be excluded.
-        val_x = train_x.pop()
-        val_y = train_y.pop()
+        val_x = train_x.pop(val)
+        val_y = train_y.pop(val)
 
         # Recreate the training set.
         train_x = np.concatenate(train_x)
@@ -144,9 +152,10 @@ def cross_validation(xs, ys, k, pred, loss, w_start, **kwargs) :
 
         # Train the regression.
         w = train(train_x, train_y, pred, loss, w_last, **kwargs)
-        
-        # Use the new value as the guess vector.
-        # This should be equivalent to taking a weighted average of the results.
-        # Source: 
-        w_last = w
-    return w_last
+
+        w_list.append(w)
+        w_last = w_start
+        mse_list.append(loss(val_y, [pred(x, w) for x in val_x]))
+        r2_list.append(r2(val_y, [pred(x, w) for x in val_x]))
+    return sum(w_list[i] / mse_list[i]
+               for i in range(len(w_list))) / sum(1 / mse for mse in mse_list)
