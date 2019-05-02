@@ -7,6 +7,30 @@ This script tests the mdr.py module and displays graphs of each
 test regression. The types of graphs displayed can be changed with
 command-line arguments.
 
+usage: test.py [-h] [--lin-1d {on,off}] [--lin-1d-bias {on,off}]
+               [--lin-2d {surface,contour,off}] [--non-lin-1d {on,off}]
+               [--non-lin-2d {surface,contour,off}] [--print-debug {on,off}]
+
+Test the regression learning algorithm against various regression types.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --lin-1d {on,off}     Whether to show the graph of the 1D linear regression
+                        with no intercept.
+  --lin-1d-bias {on,off}
+                        Whether to show the graph of the 1D linear regression
+                        with intercept.
+  --lin-2d {surface,contour,off}
+                        Whether to show the graph of the 2D linear regression
+                        with intercept.
+  --non-lin-1d {on,off}
+                        Whether to show the graph of the 1D non-linear
+                        regression.
+  --non-lin-2d {surface,contour,off}
+                        Whether to show the graph of the 2D non-linear
+                        regression.
+  --print-debug {on,off}
+                        Whether to print debug information.
 """
 
 import mdr
