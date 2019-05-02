@@ -80,8 +80,8 @@ def train(x, y, pred, loss, w_start, **kwargs):
     else :
         grad_conv = 0.01
 
-    if "print" in kwargs :
-        printout = kwargs["print"]
+    if "printout" in kwargs :
+        printout = kwargs["printout"]
     else :
         printout = False
     
