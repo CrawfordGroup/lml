@@ -157,5 +157,7 @@ def cross_validation(xs, ys, k, pred, loss, w_start, **kwargs) :
         w_last = w_start
         mse_list.append(loss(val_y, [pred(x, w) for x in val_x]))
         r2_list.append(r2(val_y, [pred(x, w) for x in val_x]))
+
+    # Weight the results using the reciprocal of the mean-squared error.
     return sum(w_list[i] / mse_list[i]
                for i in range(len(w_list))) / sum(1 / mse for mse in mse_list)
