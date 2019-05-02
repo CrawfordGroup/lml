@@ -85,27 +85,27 @@ def main(**kwargs) :
     if kwargs["print_debug"] == "on" :
         print("Test case 0:")
         w0 = mdr.cross_validation(input0, output0, 3, pred0, l2_square,
-                                  [0], print=True)
+                                  [0], printout=True)
         print(f"r² = {r2(output0, [pred0(i, w0) for i in input0])}")
 
         print("\nTest case 1:")
         w1 = mdr.cross_validation(input1, output1, 3, pred1, l2_square,
-                                  [0, 0], print=True)
+                                  [0, 0], printout=True)
         print(f"r² = {r2(output1, [pred1(i, w1) for i in input1])}")
 
         print("\nTest case 2:")
         w2 = mdr.cross_validation(input2, output2, 3, pred2, l2_square,
-                                  [0, 0, 0], print=True)
+                                  [0, 0, 0], printout=True)
         print(f"r² = {r2(output2, [pred2(i, w2) for i in input2])}")
 
         print("\nTest case 3:")
         w3 = mdr.cross_validation(input3, output3, 10, pred3, l2_square,
-                                  [0, 0, 0], print=True)
+                                  [0, 0, 0], printout=True)
         print(f"r² = {r2(output3, [pred3(i, w3) for i in input3])}")
 
         print("\nTest case 4:")
         w4 = mdr.cross_validation(input4, output4, 10, pred4, l2_loss,
-                                  [1, 0, 1, 0], print=True)
+                                  [1, 0, 1, 0], printout=True)
         print(f"r² = {r2(output4, [pred4(i, w4) for i in input4])}")
 
     else :
