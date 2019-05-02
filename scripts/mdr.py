@@ -10,13 +10,6 @@ import math
 import numpy as np
 import copy
 
-# Compute the r-squared correlation value.
-def r2(y, ycalc) :
-    avg = sum(y) / len(y)
-    sum_res = sum((y[i] - ycalc[i]) ** 2 for i in range(len(y)))
-    sum_tot = sum((y[i] - avg) ** 2 for i in range(len(y)))
-    return (1 - sum_res / sum_tot)
-
 # Compute the gradient of the loss function.
 def gradient(loss, pred, x, dx, ins, outs) :
     # Check to see if the input point is a vector or a scalar.
@@ -136,7 +129,6 @@ def cross_validation(xs, ys, k, pred, loss, w_start, **kwargs) :
     w_last = w_start
     w_list = []
     mse_list = []
-    r2_list = []
     for val in range(0, k) :
         # Set up the training set
         train_x = copy.deepcopy(x_list)
@@ -156,7 +148,6 @@ def cross_validation(xs, ys, k, pred, loss, w_start, **kwargs) :
         w_list.append(w)
         w_last = w_start
         mse_list.append(loss(val_y, [pred(x, w) for x in val_x]))
-        r2_list.append(r2(val_y, [pred(x, w) for x in val_x]))
 
     # Weight the results using the reciprocal of the mean-squared error.
     return sum(w_list[i] / mse_list[i]
