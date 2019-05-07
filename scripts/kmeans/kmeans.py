@@ -23,15 +23,14 @@ def random_seq(points, choices) :
 
 def score_dist(clusters, centers, k) :
     """
-    Score a configuration of clusters with the root mean-squared of the
-    standard deviation, but divide by k so that configurations with fewer
-    clusters are pelalized.
+    Score a configuration of clusters with the square root of the sum of the
+    variances.
     """
     pts = np.array(clusters)
     cts = np.array(centers)
     variance = [sum(np.linalg.norm(pts[i][j] - cts[i]) ** 2 for j in range(len(pts[i])))
               for i in range(len(cts))]
-    return math.sqrt(sum(variance)) / k
+    return math.sqrt(sum(variance))
 
 # Find if two clusters are equal under permutation.
 def equal_under_changes(c1, c2, depth = None) :
