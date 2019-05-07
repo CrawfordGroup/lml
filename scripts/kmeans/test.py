@@ -20,7 +20,6 @@ optional arguments:
                         Whether to print the debug information.
 
 """
-import numpy as np
 import random as rand
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -39,7 +38,7 @@ def main(**kwargs) :
                    for i in range(10)]
     points2 = [[rand.randrange(0, 10), rand.randrange(0, 10),
                 rand.randrange(0, 10)] for i in range(50)]
-    # When trained, this will cause only two clusters to be formed.
+    # When trained directly, this will cause only two clusters to be formed.
     points3 = [[9, 0], [3, 1], [4, 4], [8, 8], [7, 0], [6, 8], [6, 9], [5, 3],
                [9, 0], [7, 0]]
     # Designed to have 3 clusters.
