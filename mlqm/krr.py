@@ -30,7 +30,6 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0.0005,K=30):# {{{
 
     # generate the total data set # {{{
     tatr_list = [] # hold TATRs
-#    E_list = [] # hold E
     E_CCSD_CORR_list = [] # hold CCSD correlation energy
     E_SCF_list = [] # hold SCF energy
     for i in range(0,N):
@@ -42,7 +41,6 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0.0005,K=30):# {{{
         mol = mesp.Molecule('H2',geom,bas)
         tatr = make_tatr(mol,150,st)
         tatr_list.append(tatr)
-#        E_list.append(mol.E_CCSD)
         E_CCSD_CORR_list.append(mol.E_CCSD_CORR)
         E_SCF_list.append(mol.E_SCF)# }}}
 
@@ -62,7 +60,7 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0.0005,K=30):# {{{
 
     # k-fold cross-validation to tune s
     print("Cross-validating s . . .")
-    k = M
+    k = 5
     step = 100
     max_it = 1000
     grad_conv = 1E-5 
@@ -80,10 +78,8 @@ def do_krr(M=12,N=50,st=0.05,s=5,l=0.0005,K=30):# {{{
         cv_error_new, pred_E_list, mse_list = cross_validate(t_tatr,t_E,k,s_new,l)
         cv_error = np.append(cv_error,cv_error_new)
 
-
         grad = np.gradient(cv_error,s_list)
         abs_grad = [abs(i) for i in grad]
-
 
         if min(abs_grad) < grad_conv:
             print("converged in {} iterations".format(it))
