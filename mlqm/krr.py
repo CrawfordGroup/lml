@@ -2,7 +2,6 @@ import numpy as np
 from numpy import linalg as la
 import psi4
 psi4.core.be_quiet()
-import mesp
 import matplotlib
 import matplotlib.pyplot as plt
 import random
