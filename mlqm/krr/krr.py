@@ -2,19 +2,25 @@ import numpy as np
 from numpy import linalg as la
 import psi4
 psi4.core.be_quiet()
+import json
 import matplotlib
 import matplotlib.pyplot as plt
 import random
 import copy
 
-def do_krr(M=12,N=200,st=0.05,K=30,bas="def2-TZVP",save=True):# {{{
+def do_krr(inpf,save=True):# {{{
     '''
+    inpf must contain AT LEAST:
+    inp['mol']['geom']: a geometry with a variable (gvar) given for displacement along PES
+    inp['setup']: 'M', 'N', 'st', 'K', 'gvar' (list), 'grange' (list), 'basis'
+    See examples at github.com/bgpeyton/lml/mlqm/krr/examples/
+
     Kernel Ridge Regression with M training points and N total representations
     st used for tatr generation
     K repeated k-means algorithms, best clustering chosen
     save option to write TATRs and SCF/CCSD energies to file
 
-    The algorithm will displace a diatomic over the range 0.5 - 2 Angstroms, generating
+    The algorithm will displace a diatomic over `grange[0]-grange[1]` Angstroms, generating
     TATRs and corresponding energies at each point. Then, a training set of `M` TATRs 
     will be selected by the k-means algorithm. Using this training set, the 
     hyperparameters `s` and `l` (kernel width and regularization) will be determined by 
@@ -24,37 +30,70 @@ def do_krr(M=12,N=200,st=0.05,K=30,bas="def2-TZVP",save=True):# {{{
     spread across the PES (not including any training points) is then predicted using the 
     model, and the results are graphed.
     '''
+    # parse input# {{{
+    with open(inpf,'r') as f:
+        inp = json.load(f)
+    M    = inp['setup']['M']
+    N    = inp['setup']['N']
+    st   = inp['setup']['st']
+    K    = inp['setup']['K']
+    bas  = inp['setup']['basis']
+    geom = inp['mol']['geom']# }}}
 
     # generate the total data set # {{{
-    pes = np.linspace(0.5,2,N) # N evenly-spaced representations on the PES
-    try:
-        print("Loading data set . . .")
-        tatr_list = np.load('t_list.npy').tolist()
-        E_CCSD_CORR_list = np.load('corr_list.npy').tolist()
-        E_SCF_list = np.load('scf_list.npy').tolist()
-    except FileNotFoundError:
+    # N evenly-spaced representations on the PES
+    bot = float(inp['setup']['grange'][0])
+    top = float(inp['setup']['grange'][1])
+    gvar = inp['setup']['gvar'][0]
+    pes = np.linspace(bot,top,N) 
+    while inp['data']['generated']:
+        try:
+            print("Loading data set . . .")
+            tatr_list = np.load('t_list.npy').tolist()
+            E_CCSD_CORR_list = np.load('corr_list.npy').tolist()
+            E_SCF_list = np.load('scf_list.npy').tolist()
+            break
+        except FileNotFoundError:
+            print("Data not found. Proceeding to data generation.")
+            inp['data']['generated'] = False
+    else:
         print("Generating data set . . .")
         tatr_list = [] # hold TATRs
         E_CCSD_CORR_list = [] # hold CCSD correlation energy
         E_SCF_list = [] # hold SCF energy
+
         for i in range(0,N):
-            mol = psi4.geometry("""
-                H 
-                H 1 """ + str(pes[i]) + """
-                symmetry c1
-            """)
+            new_geom = geom.replace(gvar,str(pes[i]))
+            mol = psi4.geometry(new_geom)
             tatr, wfn = make_tatr(mol,bas,st=st)
             tatr_list.append(tatr)
             E_CCSD_CORR_list.append(wfn.variable('CCSD CORRELATION ENERGY'))
             E_SCF_list.append(wfn.variable('SCF TOTAL ENERGY'))
+        inp['data']['generated'] = True
         if save:
             np.save('t_list.npy',tatr_list)
             np.save('corr_list.npy',E_CCSD_CORR_list)
-            np.save('scf_list.npy',E_SCF_list)# }}}
+            np.save('scf_list.npy',E_SCF_list)
+    # update the input
+    with open(inpf,'w') as f:
+        json.dump(inp, f, indent=4)# }}}
 
     # generate the training/validation sets# {{{
-    print("Generating training set . . .")
-    trainers = gen_train(tatr_list, M, K) 
+    if inp['data']['trainers']:
+        print("Loading training set from {} . . .".format(inpf))
+        trainers = inp['data']['trainers']
+        if len(trainers) != M:
+            print("Given training set does not have {} points! Re-generating . . .".format(M))
+            trainers = gen_train(tatr_list, M, K) 
+            inp['data']['trainers'] = trainers
+            with open(inpf,'w') as f:
+                json.dump(inp, f, indent=4)
+    else:
+        print("Generating training set . . .")
+        trainers = gen_train(tatr_list, M, K) 
+        inp['data']['trainers'] = trainers
+        with open(inpf,'w') as f:
+            json.dump(inp, f, indent=4)
 
     print("Training set: {}".format(trainers))
     t_pos = [pes[i] for i in trainers]
@@ -88,11 +127,29 @@ def do_krr(M=12,N=200,st=0.05,K=30,bas="def2-TZVP",save=True):# {{{
 
     # model determination# {{{
     # train the hypers
-    s, l = log_space_cv(t_CORR_E,t_tatr,k=M)
+    if inp['data']['hypers']:
+        print("Loading hyperparameters from {}".format(inpf))
+        s = inp['data']['s']
+        l = inp['data']['l']
+    else:
+        print("Determining hyperparameters via k-fold cross validation . . .")
+        s, l = log_space_cv(t_CORR_E,t_tatr,k=M)
+        inp['data']['hypers'] = True
+        inp['data']['s'] = s
+        inp['data']['l'] = l
+        with open(inpf,'w') as f:
+            json.dump(inp, f, indent=4)
 
     # train for alpha
-    print("Model training using s = {} and l = {} . . .".format(s,l))
-    alpha = train(t_tatr,t_CORR_E,s,l)# }}}
+    if inp['data']['a']:
+        print("Loading coefficients from {}".format(inpf)) 
+        alpha = np.asarray(inp['data']['a'])
+    else:
+        print("Model training using s = {} and l = {} . . .".format(s,l))
+        alpha = train(t_tatr,t_CORR_E,s,l)
+        inp['data']['a'] = alpha.tolist()
+        with open(inpf,'w') as f:
+            json.dump(inp, f, indent=4)# }}}
 
     # predict E across the PES# {{{
     print("Predicting PES . . .")
@@ -104,16 +161,21 @@ def do_krr(M=12,N=200,st=0.05,K=30,bas="def2-TZVP",save=True):# {{{
     pred_E_list = np.add(pred_E_list,v_SCF)# }}}
 
     # plot# {{{
-    plt.figure(1)
-    plt.plot(v_PES,v_E_list,'b-o',label='CCSD PES',linewidth=3)
-    plt.plot(v_PES,v_SCF,'y-',label='SCF')
-    plt.plot(v_PES,pred_E_list,'r-^',ms=2,label='CCSD/ML-{}'.format(M),linewidth=2)
-    plt.plot(t_pos,[-1.18 for i in range(0,len(t_pos))],'go',label='Training points')
-    plt.axis([0.25,2.0,-2.5,-0.8])
-    plt.xlabel('r/Angstrom')
-    plt.ylabel('Energy/$E_h$')
-    plt.legend()
-    plt.show()# }}}
+    if inp['setup']['plot']:
+        plt.figure(1,dpi=200)
+        plt.plot(v_PES,v_E_list,'b-o',label='CCSD PES',linewidth=3)
+        plt.plot(v_PES,v_SCF,'y-',label='SCF')
+        plt.plot(v_PES,pred_E_list,'r-^',ms=2,label='CCSD/ML-{}'.format(M),linewidth=2)
+        plt.plot(t_pos,[-1.18 for i in range(0,len(t_pos))],'go',label='Training points')
+        if inp['setup']['axis']:
+            plt.axis(inp['setup']['axis'])
+        plt.xlabel('r/Angstrom')
+        plt.ylabel('Energy/$E_h$')
+        plt.legend()
+        if inp['setup']['ptype'] == "save":
+            plt.savefig('plot.png')
+        else:
+            plt.show()# }}}
     # }}}
 
 def gaus(x, u, s):# {{{
@@ -386,4 +448,6 @@ def log_space_cv(y_data,x_data,k=5):# {{{
     return s,l # }}}
 
 if __name__ == "__main__":
-    do_krr()
+    import sys
+    inp = str(sys.argv[1])
+    do_krr(inp)
