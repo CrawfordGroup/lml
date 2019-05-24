@@ -162,7 +162,10 @@ def do_krr(inpf,save=True):# {{{
 
     # plot# {{{
     if inp['setup']['plot']:
-        plt.figure(1,dpi=200)
+        if inp['setup']['dpi']:
+            plt.figure(1,dpi=inp['setup']['dpi'])
+        else:
+            plt.figure(1,dpi=100)
         plt.plot(v_PES,v_E_list,'b-o',label='CCSD PES',linewidth=3)
         plt.plot(v_PES,v_SCF,'y-',label='SCF')
         plt.plot(v_PES,pred_E_list,'r-^',ms=2,label='CCSD/ML-{}'.format(M),linewidth=2)

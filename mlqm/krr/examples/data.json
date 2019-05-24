@@ -19,6 +19,7 @@
         "basis": "def2-TZVP",
         "plot": true,
         "ptype": "save",
+        "dpi": 100,
         "axis": [
             0.5,
             2.0,
