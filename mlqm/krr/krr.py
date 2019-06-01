@@ -208,6 +208,12 @@ def make_tatr(mol,bas,x=150,st=0.05,graph=False):# {{{
     psi4.set_module_options('SCF',
         {'e_convergence': 1e-8, 'd_convergence': 1e-8,
          'DIIS': True, 'scf_type':'pk'})
+    g, gwfn = psi4.gradient('ccsd',molecule=mol,return_wfn=True)
+    D = gwfn.Da_subset("MO").to_array()
+    w,v = np.linalg.eigh(D)
+    new_C = gwfn.Ca().to_array() @ v
+    gwfn.Ca().copy(psi4.core.Matrix.from_array(new_C))
+    gwfn.set_reference_wavefunction(gwfn)
     e, wfn = psi4.energy('ccsd',molecule=mol,return_wfn=True)
     amps = wfn.get_amplitudes()
 
