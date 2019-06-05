@@ -32,7 +32,6 @@ optional arguments:
   --print-debug {on,off}
                         Whether to print debug information.
 """
-
 import mdr
 import math
 import numpy as np
@@ -230,16 +229,22 @@ if __name__ == "__main__" :
         description="Test the regression learning algorithm against various regression types.")
 
     parser.add_argument("--lin-1d", help="Whether to show the graph of the 1D linear regression with no intercept.",
-                        default="on", type=str, choices=["on", "off"], required = False)
+                        default="on", type=lambda s : str(s).lower(),
+                        choices=["on", "off"], required = False)
     parser.add_argument("--lin-1d-bias", help="Whether to show the graph of the 1D linear regression with intercept.",
-                        default="on", type=str, choices=["on", "off"], required = False)
+                        default="on", type=lambda s : str(s).lower(),
+                        choices=["on", "off"], required = False)
     parser.add_argument("--lin-2d", help="Whether to show the graph of the 2D linear regression with intercept.",
-                        default="surface", type=str, choices=["surface", "contour", "off"], required = False)
+                        default="surface", type=lambda s : str(s).lower(),
+                        choices=["surface", "contour", "off"], required = False)
     parser.add_argument("--non-lin-1d", help="Whether to show the graph of the 1D non-linear regression.",
-                        default="on", type=str, choices=["on", "off"], required = False)
+                        default="on", type=lambda s : str(s).lower(),
+                        choices=["on", "off"], required = False)
     parser.add_argument("--non-lin-2d", help="Whether to show the graph of the 2D non-linear regression.",
-                        default="surface", type=str, choices=["surface", "contour", "off"], required = False)
+                        default="surface", type=lambda s : str(s).lower(),
+                        choices=["surface", "contour", "off"], required = False)
     parser.add_argument("--print-debug", help="Whether to print debug information.",
-                        default="on", type=str, choices=["on", "off"], required=False)
+                        default="on", type=lambda s : str(s).lower(),
+                        choices=["on", "off"], required=False)
 
     main(**vars(parser.parse_args()))
