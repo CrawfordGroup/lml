@@ -4,15 +4,18 @@ import copy
 import json
 from . import datahelper
 
-def krr(ds, trainers, validators, **kwargs):
+def krr(ds, trainers, validators, return_pred=True, **kwargs):
+# {{{
     """
     Here's the idea: pass in the database and the trainers list (that is,
     the list of indices of the training set within the grand set)
     """
-    ref = True
     with open(ds.inpf) as f:
         inp = json.load(f)
+    ref = copy.copy(inp['setup']['ref'])
 
+    # pull grand representations and SCF/pred data for validation set
+    # {{{
     # NOTE: the grand data set generally contains the validation set
     # so the positions of trainers (at least by the k-means algorithm)
     # is actually determined only for the subset of data which does not
@@ -22,14 +25,16 @@ def krr(ds, trainers, validators, **kwargs):
         t_reps = [noval_reps[i] for i in trainers]
     else:
         t_reps = [ds.grand['representations'][i] for i in trainers]
+    if return_pred == True:
+        p_CORR_E = [ds.grand['values'][i] for i in validators]
     v_reps = [ds.grand['representations'][i] for i in validators]
     v_SCF_list = [ds.grand['reference'][i] for i in validators]
+    # }}}
 
-    
-#    p_CORR_E = [] # validation energies with predtype (for graphing with ref=True)
-#    v_PES = [] # validation PES
-
-    if ds.valtype == ds.predtype:
+    if ds.valtype == ds.predtype: # all data already computed
+    # {{{
+        ref = False # no point in collecting valtype results if they overlap
+        return_pred = False # ''predtype
         print("Sorting training/validation sets from grand training data.")
         if 'remove' in kwargs:
             noval_E = np.delete(ds.grand["values"],validators,axis=0)
@@ -38,11 +43,11 @@ def krr(ds, trainers, validators, **kwargs):
             t_CORR_E = [ds.grand["values"][i] for i in trainers]
         v_CORR_E = [ds.grand["values"][i] for i in validators]
         v_SCF_list = [ds.grand["reference"][i] for i in validators]
+    # }}}
 
-    else:
-        # for MP2->CCSD, we need MP2 TATRs (already computed) and CCSD energies
-        # for training set and validation set
-        # NOTE: while we need validation set TATRs for prediction, the energies
+    else: # we need valtype values for training set and (possibly) validation set
+    # {{{
+        # NOTE: while we need validation set reps for prediction, the energies
         # are used solely for the purpose of graphing the "true" energies against
         # the ML-E. Thus in a "real" scenario, additional calculations on the
         # validation set will not be done.
@@ -65,48 +70,48 @@ def krr(ds, trainers, validators, **kwargs):
             t_CORR_E = datahelper.data_gen(ds,pts,ds.valtype)
             np.save('train_corr_list.npy',t_CORR_E)
             inp['data']['train_generated'] = True
-
         # update the input
         with open(ds.inpf,'w') as f:
             json.dump(inp, f, indent=4)
 
-        while inp['data']['valid_generated']:
-            print("Load validation data from file.")
-            try:
-                v_CORR_E = np.load('valid_corr_list.npy').tolist()
-#                for i in vals:
-#                    if ref == True:
-#                        p_CORR_E.append(ds.grand['values'][i])
-#                    v_PES.append(pes[i])
-                break
-            except FileNotFoundError:
-                print("Data not found. Proceeding to data generation.")
-                inp['data']['grand_generated'] = False
-        else:
-            print("Generating validation set data . . .")
-            bot = float(inp['setup']['grange'][0])
-            top = float(inp['setup']['grange'][1])
-            pes = np.linspace(bot,top,ds.N)
-            pts = [pes[i] for i in validators]
-            v_CORR_E = []
-            if ref == True:
-                v_CORR_E = datahelper.data_gen(ds,pts,ds.valtype)
-            if ref == True:
-                np.save('valid_corr_list.npy',v_CORR_E)
-            inp['data']['valid_generated'] = True
-
-        # update the input
-        with open(ds.inpf,'w') as f:
-            json.dump(inp, f, indent=4)
+        if ref == True:
+            while inp['data']['valid_generated']:
+                print("Load validation data from file.")
+                try:
+                    v_CORR_E = np.load('valid_corr_list.npy').tolist()
+                    break
+                except FileNotFoundError:
+                    print("Data not found. Proceeding to data generation.")
+                    inp['data']['grand_generated'] = False
+            else:
+                print("Generating validation set data . . .")
+                bot = float(inp['setup']['grange'][0])
+                top = float(inp['setup']['grange'][1])
+                pes = np.linspace(bot,top,ds.N)
+                pts = [pes[i] for i in validators]
+                v_CORR_E = []
+                if ref == True:
+                    v_CORR_E = datahelper.data_gen(ds,pts,ds.valtype)
+                if ref == True:
+                    np.save('valid_corr_list.npy',v_CORR_E)
+                inp['data']['valid_generated'] = True
+    
+            # update the input
+            with open(ds.inpf,'w') as f:
+                json.dump(inp, f, indent=4)
+    # }}}
 
     # internally shift all corr E by the avg training set corr E
+    # {{{
     t_CORR_avg = np.mean(t_CORR_E)
     t_CORR_E = np.subtract(t_CORR_E,t_CORR_avg)
     if ref == True:
         v_CORR_E = np.subtract(v_CORR_E,t_CORR_avg)
-#        p_CORR_E = np.subtract(p_CORR_E,t_CORR_avg)
+    if return_pred == True:
+        p_CORR_E = np.subtract(p_CORR_E,t_CORR_avg)
+    # }}}
 
-    # model determination
+    # model determination (`s` and `l` hypers, then `a` coefficients)
     # {{{
     # train the hypers
     if inp['data']['hypers']:
@@ -130,7 +135,8 @@ def krr(ds, trainers, validators, **kwargs):
         alpha = train(t_reps,t_CORR_E,s,l)
         inp['data']['a'] = alpha.tolist()
         with open(ds.inpf,'w') as f:
-            json.dump(inp, f, indent=4)# }}}
+            json.dump(inp, f, indent=4)
+    # }}}
 
     # predict E across the validators
     print("Predicting validation set . . .")
@@ -138,20 +144,27 @@ def krr(ds, trainers, validators, **kwargs):
 
     pred_E_list = np.add(pred_E_list,t_CORR_avg)
     pred_E_list = np.add(pred_E_list,v_SCF_list)
+    
+    return_dict = {"Predictions": pred_E_list,
+                   "SCF": v_SCF_list}
+
     if ref == True:
         v_E_list = np.add(v_CORR_E,t_CORR_avg)
         v_E_list = np.add(v_E_list,v_SCF_list)
-#        p_E_list = np.add(p_CORR_E,t_CORR_avg)
-#        p_E_list = np.add(p_E_list,v_SCF_list)
-        return v_SCF_list, pred_E_list, v_E_list
+        return_dict["Validations"] =  v_E_list
+    if return_pred == True:
+        p_E_list = np.add(p_CORR_E,t_CORR_avg)
+        p_E_list = np.add(p_E_list,v_SCF_list)
+        return_dict["Predtype"] = p_E_list
 
-    return v_SCF_list, pred_E_list
+    return return_dict
+# }}}
 
 def pred(x,xt,a,s=0.05,l=0):
 # {{{
     '''
     predict answers "Y" across entire PES
-    given x (full set of TATRs), xt (training TATRs), and a (alpha)
+    given x (full set of reps), xt (training reps), and a (alpha)
     optional kernel width s, regularization term l
     return Y 
     '''
@@ -176,7 +189,7 @@ def train(x,y,s=0.05,l=0):
 # {{{
     '''
     optimize parameter(s) "a" by solving linear equations
-    given x (training TATRs) and y (training energies)
+    given x (training reps) and y (training energies)
     optional kernel width s, regularization term la
     return a
     '''
@@ -206,7 +219,7 @@ def solve_alpha(K,Y,l=0):
 def make_k(rep1, rep2, s):
 # {{{
     '''
-    return a gaussian kernel from two TATRs
+    return a gaussian kernel from two reps
     '''
     rep1 = np.asarray(rep1)
     rep2 = np.asarray(rep2)

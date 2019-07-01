@@ -40,7 +40,7 @@ class Dataset(object):
             self.geom = inp['mol']['geom']
             self.valtype  = inp['setup']['valtype'].upper() # "high" theory for the training set
             self.predtype = inp['setup']['predtype'].upper() # "low" theory for the predictions
-            self.ref = inp['setup']['ref'] # store and graph validation set with val and predtype
+            self.ref = inp['setup']['ref'] # generate val set using valtype (for tests)
             print("Using {} amplitudes to predict {}-level energies!".format(self.predtype,self.valtype))
 
         if loc_str is not None:
