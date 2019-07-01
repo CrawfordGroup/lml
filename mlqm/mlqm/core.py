@@ -3,9 +3,9 @@
 # relevant information.
 
 import numpy as np
-import train
 import json
-import datahelper
+from . import train
+from . import datahelper
 
 class Dataset(object):
     """
@@ -21,7 +21,8 @@ class Dataset(object):
         """
         Initialize the dataset. Pass in a data set or the location of one.
         """
-        self.grand = {
+        # for storing the grand data set from which training sets may be derived
+        self.grand = { 
             "representations" : None,
             "values" : None,
             "reference" : None
@@ -73,23 +74,35 @@ class Dataset(object):
             self.data = loc_str
             print("Data loaded.")
 
-    def gen_grand(self, gen_type):
+    def gen_grand(self, gen_type, **kwargs):
         if gen_type.lower() in ["pes"]:
-            self.grand["representations"], self.grand["values"], self.grand["reference"] = datahelper.pes_gen(self)
+            self.grand["representations"], self.grand["values"], self.grand["reference"] = datahelper.pes_gen(self, **kwargs)
         else:
             print("Generation of {} data not supported.".format(gen_type))
 
     def find_trainers(self, traintype, **kwargs):
+        if "remove" in kwargs:
+            print("NOTE: Trainer map will be valid for grand data set once removed points are dropped!")
         if traintype.lower() in ["kmeans","k-means","k_means"]:
-            if "K" in kwargs:
-                K = kwargs["K"]
+            with open(self.inpf) as f:
+                inp = json.load(f)
+            if "K" in inp['setup']:
+                K = inp['setup']['K']
             else:
                 K = 30
-            trainers = []
-            t_map, close_pts = train.k_means_loop(self.grand["representations"],self.M,K)
-            for pt in range(0,self.M): # loop over centers, grab positions of trainers
-                trainers.append(t_map[pt][close_pts[pt]][1])
-            return sorted(trainers, reverse=True)
+            if inp['data']['trainers'] is not False:
+                print("{} training set already generated.".format(traintype))
+                return inp['data']['trainers']
+            else:
+                print("Determining training set via {} algorithm . . .".format(traintype))
+                trainers = []
+                t_map, close_pts = train.k_means_loop(self.grand["representations"],self.M,K,**kwargs)
+                for pt in range(0,self.M): # loop over centers, grab positions of trainers
+                    trainers.append(t_map[pt][close_pts[pt]][1])
+                inp['data']['trainers'] = sorted(trainers, reverse=True)
+                with open(self.inpf,'w') as f:
+                    json.dump(inp, f, indent=4)
+                return sorted(trainers, reverse=True)
         else:
             raise RuntimeError("I don't know how to get {} training points yet!".format(traintype))
 
@@ -99,7 +112,7 @@ class Dataset(object):
 
         Examples
         --------
-        data.gen_train('k_means', M=12)
+        data.gen_train('k_means', K=12)
         """
 
         if train_type.lower() in ["k_means","kmeans","k-means"]:

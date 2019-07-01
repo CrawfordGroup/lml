@@ -2,9 +2,6 @@ import psi4
 psi4.core.be_quiet()
 import numpy as np
 
-
-
-
 def make_tatr(mol,theory,bas,x=150,st=0.05,graph=False):
 # {{{
     '''
