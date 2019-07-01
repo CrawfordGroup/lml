@@ -22,6 +22,6 @@ Some will also be collected into the MLQM Package, which can be installed by run
 ```python
 pip install -e .
 ```
-inside the `/lml/mesp/` directory (where `setup.py` is located). The purpose of this package is to facilitate the mixing of different algorithms and quick testing of alternative data types and intermediate steps during the learning process. 
+inside the `/lml/mlqm/` directory (where `setup.py` is located). The purpose of this package is to facilitate the mixing of different algorithms and quick testing of alternative data types and intermediate steps during the learning process. 
 
 <img src="https://github.com/bgpeyton/lml/blob/master/images/krr.png" height=350>
