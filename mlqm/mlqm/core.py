@@ -106,15 +106,3 @@ class Dataset(object):
         else:
             raise RuntimeError("I don't know how to get {} training points yet!".format(traintype))
 
-    def gen_train(self, train_type, **kwargs):
-        """
-        Push the data into the appropriate generation routine for the trainers.
-
-        Examples
-        --------
-        data.gen_train('k_means', K=12)
-        """
-
-        if train_type.lower() in ["k_means","kmeans","k-means"]:
-            return train.k_means(**kwargs)
-
