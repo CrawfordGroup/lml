@@ -53,10 +53,11 @@ def pes_gen(ds, **kwargs):
                     # TODO: too hacky, but works for testing
                     rep, wfn, wfn1 = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
                     ref2_list.append(wfn1.variable('{} CORRELATION ENERGY'.format('CCSD')))
+                    g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format('CCSD')))
                 else:
                     rep, wfn = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
+                    g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format(ds.predtype)))
                 rep_list.append(rep)
-                g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format('CCSD')))
                 E_SCF_list.append(wfn.variable('SCF TOTAL ENERGY'))
             inp['data']['grand_generated'] = True
             np.save('rep_list.npy',rep_list)
