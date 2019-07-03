@@ -4,11 +4,12 @@ import copy
 import json
 from . import datahelper
 
-def krr(ds, trainers, validators, return_pred=True, **kwargs):
+def krr(ds, trainers, validators, **kwargs):
 # {{{
     """
-    Here's the idea: pass in the database and the trainers list (that is,
-    the list of indices of the training set within the grand set)
+    Here's the idea: pass in the database and the trainers/validators list (that is,
+    the list of indices of the training and validation set within the grand set)
+    then generate any additional data if needed
     """
     with open(ds.inpf) as f:
         inp = json.load(f)
@@ -32,7 +33,6 @@ def krr(ds, trainers, validators, return_pred=True, **kwargs):
 
     if ds.valtype == ds.predtype: # all data already computed
     # {{{
-        ref = False # no point in collecting valtype results if they overlap
         print("Sorting training/validation sets from grand training data.")
         if 'remove' in kwargs:
             noval_E = np.delete(ds.grand["values"],validators,axis=0)
@@ -93,8 +93,6 @@ def krr(ds, trainers, validators, return_pred=True, **kwargs):
                 if ref == True:
                     np.save('valid_corr_list.npy',v_CORR_E)
                 inp['data']['valid_generated'] = True
-        else:
-            v_CORR_E = None
     
             # update the input
             with open(ds.inpf,'w') as f:
@@ -139,14 +137,16 @@ def krr(ds, trainers, validators, return_pred=True, **kwargs):
     pred_E_list = np.add(pred_E_list,t_CORR_avg)
     pred_E_list = np.add(pred_E_list,v_SCF_list)
 
-    v_E_list = np.add(v_CORR_E,v_SCF_list)
     p_E_list = np.add(p_CORR_E,v_SCF_list)
     
     return_dict = {"Predictions": pred_E_list,
-                   "Validations": v_E_list,
                    "SCF": v_SCF_list,
                    "Predtype": p_E_list,
                    "Average": t_CORR_avg}
+    if ref == True:
+        v_E_list = np.add(v_CORR_E,v_SCF_list)
+        return_dict["Validations"] = v_E_list
+
     return return_dict
 # }}}
 
