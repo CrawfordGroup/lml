@@ -38,24 +38,32 @@ def pes_gen(ds, **kwargs):
             inp['data']['grand_generated'] = False
 
     else:
-        if ds.predtype in ["MP2","CCSD"]:
+        if ds.predtype in ["MP2","CCSD","CCSD-NAT"]:
             print("Generating grand {} potential energy surface data set . . .".format(ds.predtype))
             rep_list = [] # hold representations
             g_E_CORR_list = [] # hold low-level correlation energy for grand data set
             E_SCF_list = [] # hold SCF energy
+            ref2_list = [] # hold reference (non-natural orbital) energies if needed
             for i in range(0,len(pes)):
                 new_geom = ds.geom.replace(gvar,str(pes[i]))
                 mol = psi4.geometry(new_geom)
                 # TODO: this should call the appropriate repgen function
                 # would like to be able to make TATRs, density representation, etc
-                rep, wfn = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
+                if ds.predtype == "CCSD-NAT":
+                    # TODO: too hacky, but works for testing
+                    rep, wfn, wfn1 = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
+                    ref2_list.append(wfn1.variable('{} CORRELATION ENERGY'.format('CCSD')))
+                else:
+                    rep, wfn = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
                 rep_list.append(rep)
-                g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format(ds.predtype)))
+                g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format('CCSD')))
                 E_SCF_list.append(wfn.variable('SCF TOTAL ENERGY'))
             inp['data']['grand_generated'] = True
             np.save('rep_list.npy',rep_list)
             np.save('grand_corr_list.npy',g_E_CORR_list)
             np.save('ref_list.npy',E_SCF_list)
+            if ds.predtype == "CCSD-NAT":
+                np.save('ref2_list.npy',ref2_list)
         else:
             print("Prediction set type {} not supported for potential energy surfaces.".format(ds.predtype))
             raise Exception("Prediction set type {} not supported!".format(ds.predtype))

@@ -42,6 +42,8 @@ class Dataset(object):
             self.predtype = inp['setup']['predtype'].upper() # "low" theory for the predictions
             self.ref = inp['setup']['ref'] # generate val set using valtype (for tests)
             print("Using {} amplitudes to predict {}-level energies!".format(self.predtype,self.valtype))
+            if (self.valtype == "CCSD-NAT") or (self.predtype == "CCSD-NAT"):
+                print("NOTE: Currently, CCSD-NAT can only be used for predicting other CCSD-NAT energies!")
 
         if loc_str is not None:
             if isinstance(loc_str, str):
