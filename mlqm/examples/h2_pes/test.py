@@ -13,7 +13,6 @@ validators = sorted([i for i in range(0,a.N,4)], reverse=True)
 
 trainers = a.find_trainers("k-means", remove=validators)
 
-#v_SCF, pred_E_list, v_E_list = mlqm.krr.krr(a,trainers,validators,remove=True)
 results = mlqm.krr.krr(a,trainers,validators,remove=True)
 
 pes = np.linspace(0.5,2.0,200)
@@ -32,5 +31,5 @@ plt.xlabel('r/Angstrom')
 plt.ylabel('Energy/$E_h$')
 plt.legend()
 #plt.show()
-plt.savefig('figure1.png')
+plt.savefig('figure1.png',transparent=False)
 

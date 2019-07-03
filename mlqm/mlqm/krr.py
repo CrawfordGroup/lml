@@ -4,11 +4,12 @@ import copy
 import json
 from . import datahelper
 
-def krr(ds, trainers, validators, return_pred=True, **kwargs):
+def krr(ds, trainers, validators, **kwargs):
 # {{{
     """
-    Here's the idea: pass in the database and the trainers list (that is,
-    the list of indices of the training set within the grand set)
+    Here's the idea: pass in the database and the trainers/validators list (that is,
+    the list of indices of the training and validation set within the grand set)
+    then generate any additional data if needed
     """
     with open(ds.inpf) as f:
         inp = json.load(f)
@@ -25,16 +26,13 @@ def krr(ds, trainers, validators, return_pred=True, **kwargs):
         t_reps = [noval_reps[i] for i in trainers]
     else:
         t_reps = [ds.grand['representations'][i] for i in trainers]
-    if return_pred == True:
-        p_CORR_E = [ds.grand['values'][i] for i in validators]
+    p_CORR_E = [ds.grand['values'][i] for i in validators]
     v_reps = [ds.grand['representations'][i] for i in validators]
     v_SCF_list = [ds.grand['reference'][i] for i in validators]
     # }}}
 
     if ds.valtype == ds.predtype: # all data already computed
     # {{{
-        ref = False # no point in collecting valtype results if they overlap
-        return_pred = False # ''predtype
         print("Sorting training/validation sets from grand training data.")
         if 'remove' in kwargs:
             noval_E = np.delete(ds.grand["values"],validators,axis=0)
@@ -102,14 +100,8 @@ def krr(ds, trainers, validators, return_pred=True, **kwargs):
     # }}}
 
     # internally shift all corr E by the avg training set corr E
-    # {{{
     t_CORR_avg = np.mean(t_CORR_E)
     t_CORR_E = np.subtract(t_CORR_E,t_CORR_avg)
-    if ref == True:
-        v_CORR_E = np.subtract(v_CORR_E,t_CORR_avg)
-    if return_pred == True:
-        p_CORR_E = np.subtract(p_CORR_E,t_CORR_avg)
-    # }}}
 
     # model determination (`s` and `l` hypers, then `a` coefficients)
     # {{{
@@ -144,18 +136,16 @@ def krr(ds, trainers, validators, return_pred=True, **kwargs):
 
     pred_E_list = np.add(pred_E_list,t_CORR_avg)
     pred_E_list = np.add(pred_E_list,v_SCF_list)
+
+    p_E_list = np.add(p_CORR_E,v_SCF_list)
     
     return_dict = {"Predictions": pred_E_list,
-                   "SCF": v_SCF_list}
-
+                   "SCF": v_SCF_list,
+                   "Predtype": p_E_list,
+                   "Average": t_CORR_avg}
     if ref == True:
-        v_E_list = np.add(v_CORR_E,t_CORR_avg)
-        v_E_list = np.add(v_E_list,v_SCF_list)
-        return_dict["Validations"] =  v_E_list
-    if return_pred == True:
-        p_E_list = np.add(p_CORR_E,t_CORR_avg)
-        p_E_list = np.add(p_E_list,v_SCF_list)
-        return_dict["Predtype"] = p_E_list
+        v_E_list = np.add(v_CORR_E,v_SCF_list)
+        return_dict["Validations"] = v_E_list
 
     return return_dict
 # }}}
