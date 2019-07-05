@@ -23,6 +23,13 @@ def pes_gen(ds, **kwargs):
         print("NOTE: PES is altered!")
         print("PES being generated with {} points.".format(len(pes)))
 
+    if 'reptype' in kwargs:
+        reptype = kwargs['reptype'].upper()
+    else:
+        reptype = 'TATR'
+
+    print("Retrieving PES using {} representation . . .".format(reptype))
+
     while inp['data']['grand_generated']:
         try:
             print("Loading potential energy surface data set.")
@@ -55,7 +62,10 @@ def pes_gen(ds, **kwargs):
                     ref2_list.append(wfn1.variable('{} CORRELATION ENERGY'.format('CCSD')))
                     g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format('CCSD')))
                 else:
-                    rep, wfn = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
+                    if reptype == 'TATR':
+                        rep, wfn = repgen.make_tatr(mol,ds.predtype,ds.bas,st=ds.st)
+                    elif reptype == 'DTR':
+                        rep, wfn = repgen.make_dtr(mol,ds.predtype,ds.bas,st=ds.st)
                     g_E_CORR_list.append(wfn.variable('{} CORRELATION ENERGY'.format(ds.predtype)))
                 rep_list.append(rep)
                 E_SCF_list.append(wfn.variable('SCF TOTAL ENERGY'))
