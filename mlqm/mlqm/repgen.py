@@ -12,12 +12,12 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return the tatr
     '''
 
-    if (method == "CCSD") or (method == "CCSD-NAT"):
+    if (method.upper() == "CCSD") or (method.upper() == "CCSD-NAT"):
         # {{{
         # sort amplitudes by magnitude and keep the highest x
         # (sorted(x,key=abs) will ignore sign) 
-        t1 = sorted(t1.to_array().ravel(),key=abs)[-x:]
-        t2 = sorted(t2.to_array().ravel(),key=abs)[-x:]
+        t1 = sorted(t1.ravel(),key=abs)[-x:]
+        t2 = sorted(t2.ravel(),key=abs)[-x:]
 
         # make a discretized gaussian using the amps
         tatr = [] # store eq vals
@@ -33,9 +33,10 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
             tatr.append(val2)
         # }}}
 
-    elif method == "MP2":
+    elif method.upper() == "MP2":
         # {{{
-        # sort amplitudes by magnitude (sorted(x,key=abs) will ignore sign) 
+        # sort amplitudes by magnitude and keep the highest x
+        # (sorted(x,key=abs) will ignore sign) 
         t2 = sorted(t2.ravel(),key=abs)[-x:]
 
         # make a discretized gaussian using the amps
@@ -50,7 +51,7 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
 
     else: 
         print("I don't know how to handle {} amplitudes.".format(method))
-        raise Exception("{} amplitude representations not supported!")
+        raise Exception("{} amplitude representations not supported!".format(method))
 
     return np.asarray(tatr)
 # }}}

@@ -70,7 +70,7 @@ class PES(object):
         Pass kwargs forward into the input file generation.
         '''
         # generate the grand data set representations
-        # N evenly-spaced representations on the PES
+        # 'pts' evenly-spaced representations on the PES
         bot = float(self.dis[0])
         top = float(self.dis[1])
         base = self.geom
@@ -177,25 +177,25 @@ class Dataset(object):
         if reps is not None:
             if isinstance(reps,str):
                 self.grand["representations"] = np.load(reps)
-            elif isinstance(reps,ndarray):
+            elif isinstance(reps,np.ndarray):
                 self.grand["representations"] = reps
             elif isinstance(reps,list):
                 self.grand["representations"] = np.asarray(reps)
             else:
-                raise RuntimeError("""Please pass in a STR numpy filepath, NDARRAY, or 
+                raise RuntimeError("""Please pass in a STR numpy filepath, numpy.ndarray, or 
                         list of representations.""")
 
         if vals is not None:
             if isinstance(vals,str):
                 self.grand["values"] = np.load(vals)
-            elif isinstance(vals,ndarray):
+            elif isinstance(vals,np.ndarray):
                 self.grand["values"] = vals
             elif isinstance(vals,list):
                 self.grand["values"] = np.asarray(vals)
             else:
-                raise RuntimeError("""Please pass in a STR numpy filepath, NDARRAY, or 
+                raise RuntimeError("""Please pass in a STR numpy filepath, numpy.ndarray, or 
                         list of values.""")
-        else:
+        if (inpf == None) and (reps == None) and (vals == None):
             self.inpf = None
             self.setup = {}
             self.data = {}
@@ -225,16 +225,17 @@ class Dataset(object):
             if "trainers" in self.data:
                 if self.data['trainers'] is not False:
                     print("{} training set already generated.".format(traintype))
-                    return inp['data']['trainers']
-            else:
-                self.data['trainers'] = False
-                print("Determining training set via {} algorithm . . .".format(traintype))
-                trainers = []
-                t_map, close_pts = train.k_means_loop(self.grand["representations"],self.setup['M'],K,**kwargs)
-                for pt in range(0,self.M): # loop over centers, grab positions of trainers
-                    trainers.append(t_map[pt][close_pts[pt]][1])
-                self.data['trainers'] = sorted(trainers, reverse=True)
-                return sorted(trainers, reverse=True)
+                    return ds.data['trainers']
+                else:
+                    pass
+            self.data['trainers'] = False
+            print("Determining training set via {} algorithm . . .".format(traintype))
+            trainers = []
+            t_map, close_pts = train.k_means_loop(self.grand["representations"],self.setup['M'],K,**kwargs)
+            for pt in range(0,self.setup['M']): # loop over centers, grab positions of trainers
+                trainers.append(t_map[pt][close_pts[pt]][1])
+            self.data['trainers'] = sorted(trainers, reverse=True)
+            return sorted(trainers, reverse=True)
         else:
             raise RuntimeError("I don't know how to get {} training points yet!".format(traintype))
     # }}}

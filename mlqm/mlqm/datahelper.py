@@ -129,6 +129,7 @@ def get_amps(wfn,method):
     Grab aomplutudes from the wfn
     CCSD just uses wfn.get_amplitudes()
     MP2 builds them from the integrals, Fock, and Hamiltonian
+    Returns dictionary with amplitudes
     '''
     if method.upper() == "CCSD":
     # {{{
