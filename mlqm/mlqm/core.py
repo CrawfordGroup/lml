@@ -149,99 +149,91 @@ class Dataset(object):
     directly here?
     """
 
-    def __init__(self, inpf=None, loc_str=None):
+    def __init__(self, inpf=None, reps=None, vals=None):
     # {{{
         """
         Initialize the dataset. Pass in a data set or the location of one.
         """
-        # for storing the grand data set from which training sets may be derived
+        # for storing the grand data set representations and values 
         self.grand = { 
             "representations" : None,
             "values" : None,
-            "reference" : None
             }
 
         if inpf is not None:
-            with open(inpf,'r') as f:
-                inp = json.load(f)
-            self.inpf = inpf
-            self.M    = inp['setup']['M']
-            self.N    = inp['setup']['N']
-            self.st   = inp['setup']['st']
-            self.K    = inp['setup']['K']
-            self.bas  = inp['setup']['basis']
-            self.geom = inp['mol']['geom']
-            self.valtype  = inp['setup']['valtype'].upper() # "high" theory for the training set
-            self.predtype = inp['setup']['predtype'].upper() # "low" theory for the predictions
-            self.ref = inp['setup']['ref'] # generate val set using valtype (for tests)
-            print("Using {} amplitudes to predict {}-level energies!".format(self.predtype,self.valtype))
-            if (self.valtype == "CCSD-NAT") or (self.predtype == "CCSD-NAT"):
-                print("NOTE: Currently, CCSD-NAT can only be used for predicting other CCSD-NAT energies!")
-
-        if loc_str is not None:
-            if isinstance(loc_str, str):
-                try:
-                    self.grand = np.load(loc_str)
-                    print("Data loaded from file.")
-                except FileNotFoundError:
-                    raise RuntimeError("Data could not be loaded from file: {}".format(loc_str))
-            elif isinstance(loc_str,np.ndarray):
-                self.grand = loc_str
-                print("Data loaded.")
-            elif isinstance(loc_str,list):
-                self.grand = np.asarray(loc_str)
-                print("Data loaded.")
+            if isinstance(inpf,str):
+                with open(inpf,'r') as f:
+                    inp = json.load(f)
+                self.inpf = inpf
+                self.setup = inp['setup']
+                self.data = inp['data']
+            elif isinstance(inpf,dict):
+                self.inpf = None
+                self.setup = inpf['setup']
+                self.data = inp['data']
             else:
-                raise RuntimeError("""Data type {} not recognized. Please provide string 
-                        location of numpy file, numpy.ndarray data, or list 
-                        data.""".format(type(loc_str)))
+                print("Please pass in either a STR json filepath or DICT.")
+
+        if reps is not None:
+            if isinstance(reps,str):
+                self.grand["representations"] = np.load(reps)
+            elif isinstance(reps,ndarray):
+                self.grand["representations"] = reps
+            elif isinstance(reps,list):
+                self.grand["representations"] = np.asarray(reps)
+            else:
+                raise RuntimeError("""Please pass in a STR numpy filepath, NDARRAY, or 
+                        list of representations.""")
+
+        if vals is not None:
+            if isinstance(vals,str):
+                self.grand["values"] = np.load(vals)
+            elif isinstance(vals,ndarray):
+                self.grand["values"] = vals
+            elif isinstance(vals,list):
+                self.grand["values"] = np.asarray(vals)
+            else:
+                raise RuntimeError("""Please pass in a STR numpy filepath, NDARRAY, or 
+                        list of values.""")
         else:
+            self.inpf = None
+            self.setup = {}
+            self.data = {}
             print("Empty Dataset loaded.")
     # }}}
 
     def load(self, loc_str):
-    # {{{
-        if isinstance(loc_str, str):
-            try:
-                self.grand = np.load(loc_str)
-                print("Data loaded from file.")
-            except FileNotFoundError:
-                raise RuntimeError("Data could not be loaded from file: {}".format(loc_str))
-        elif isinstance(loc_str,np.ndarray):
-            self.grand = loc_str
-            print("Data loaded.")
-        elif isinstance(loc_str,list):
-            self.grand = np.asarray(loc_str)
-            print("Data loaded.")
-        else:
-            raise RuntimeError("""Data type {} not recognized. Please provide string 
-                    location of numpy file, numpy.ndarray data, or list 
-                    data.""".format(type(loc_str)))
-    # }}}
+        # {{{
+        pass
+        # }}}
+
+    def save(self, loc_str):
+        # {{{
+        pass
+        # }}}
 
     def find_trainers(self, traintype, **kwargs):
      # {{{
         if "remove" in kwargs:
             print("NOTE: Trainer map will be valid for grand data set once removed points are dropped!")
         if traintype.lower() in ["kmeans","k-means","k_means"]:
-            with open(self.inpf) as f:
-                inp = json.load(f)
-            if "K" in inp['setup']:
-                K = inp['setup']['K']
+            if "K" in self.setup:
+                K = self.setup['K']
             else:
                 K = 30
-            if inp['data']['trainers'] is not False:
-                print("{} training set already generated.".format(traintype))
-                return inp['data']['trainers']
+
+            if "trainers" in self.data:
+                if self.data['trainers'] is not False:
+                    print("{} training set already generated.".format(traintype))
+                    return inp['data']['trainers']
             else:
+                self.data['trainers'] = False
                 print("Determining training set via {} algorithm . . .".format(traintype))
                 trainers = []
-                t_map, close_pts = train.k_means_loop(self.grand["representations"],self.M,K,**kwargs)
+                t_map, close_pts = train.k_means_loop(self.grand["representations"],self.setup['M'],K,**kwargs)
                 for pt in range(0,self.M): # loop over centers, grab positions of trainers
                     trainers.append(t_map[pt][close_pts[pt]][1])
-                inp['data']['trainers'] = sorted(trainers, reverse=True)
-                with open(self.inpf,'w') as f:
-                    json.dump(inp, f, indent=4)
+                self.data['trainers'] = sorted(trainers, reverse=True)
                 return sorted(trainers, reverse=True)
         else:
             raise RuntimeError("I don't know how to get {} training points yet!".format(traintype))

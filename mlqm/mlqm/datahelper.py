@@ -88,14 +88,14 @@ def grabber(dlist,fnames=False,varnames=False,outfile='output.json'):
         for fname in fnames:
             rdict[fname] = {}
             for dname in dlist:
-                rdict[fname][dname] = np.load(fname)
+                rdict[fname][dname] = np.load(dname + '/' + fname)
     if varnames:
-            for varname in varnames:
-                rdict[varname] = {}
-                for dname in dlist:
-                    with open(dname + '/' + outfile) as out:
-                        jout = json.load(out)
-                        rdict[varname][dname] = jout[varname]
+        for varname in varnames:
+            rdict[varname] = {}
+            for dname in dlist:
+                with open(dname + '/' + outfile) as out:
+                    jout = json.load(out)
+                    rdict[varname][dname] = jout[varname]
     return rdict
     # }}}
 
@@ -122,6 +122,53 @@ def data_gen(ds,pts,method):
         corr_E.append(wfn.variable('{} CORRELATION ENERGY'.format(method)))
     return corr_E
 # }}}
+
+def get_amps(wfn,method):
+    # {{{
+    '''
+    Grab aomplutudes from the wfn
+    CCSD just uses wfn.get_amplitudes()
+    MP2 builds them from the integrals, Fock, and Hamiltonian
+    '''
+    if method.upper() == "CCSD":
+    # {{{
+        # compute and grab amplitudes
+        amps = wfn.get_amplitudes()
+        t1 = amps['tIA'].to_array()
+        t2 = amps['tIjAb'].to_array()
+        amps = {'t1':t1,'t2':t2}
+    # }}}
+    
+    elif method.upper() == "MP2":
+    # {{{
+        # no python access to MP2 amps, compute them by hand
+        # see spin-orbital CCSD code in Psi4Numpy
+        mints = psi4.core.MintsHelper(wfn.basisset())
+        nocc = wfn.doccpi()[0] * 2
+        nvirt = wfn.nmo()*2 - nocc
+        MO = np.asarray(mints.mo_spin_eri(wfn.Ca(), wfn.Ca()))
+        o = slice(0, nocc)
+        v = slice(nocc, MO.shape[0])
+        H = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
+        H = np.einsum('uj,vi,uv', wfn.Ca(), wfn.Ca(), H)
+        H = np.repeat(H, 2, axis=0)
+        H = np.repeat(H, 2, axis=1)
+        spin_ind = np.arange(H.shape[0], dtype=np.int) % 2
+        H *= (spin_ind.reshape(-1, 1) == spin_ind)
+        MOijab = MO[o, o, v, v]
+        F = H + np.einsum('pmqm->pq', MO[:, o, :, o])
+        Focc = F[np.arange(nocc), np.arange(nocc)].flatten()
+        Fvirt = F[np.arange(nocc, nvirt + nocc), np.arange(nocc, nvirt + nocc)].flatten()
+        Dijab = Focc.reshape(-1, 1, 1, 1) + Focc.reshape(-1, 1, 1) - Fvirt.reshape(-1, 1) - Fvirt
+        t2 = MOijab / Dijab
+        amps = {'t2':t2}
+        # }}}
+
+    else:
+        print("Automatic amplitude generation from wfn not supported for {}".format(method))
+    
+    return amps
+    # }}}
 
 def reg_l2(y,y_p,l,a):
 # {{{
