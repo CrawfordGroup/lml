@@ -56,85 +56,16 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return np.asarray(tatr)
 # }}}
 
-def make_dtr(mol,theory,bas,x=300,st=0.05,graph=False):
+def make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
 # {{{
     if theory == "MP2":
-        # set psi4 options
-        # {{{
-        psi4.core.clean()
-        psi4.core.clean_options()
-        psi4.core.clean_variables()
-        psi4.set_options({
-            'basis':bas,
-            'scf_type':'pk',
-            'mp2_type':'conv',
-            'freeze_core':'false',
-            'e_convergence':1e-8,
-            'd_convergence':1e-8})
-        # }}}
-
-        # Build MP2 one- and two-particle density matrices
-        # see MP2 Gradient code in Psi4Numpy for details
-
-        # start with the amplitudes, not available from Psi4 wfn object
-        # {{{
-        # Perform MP2 Energy Calculation
-        mp2_e, wfn = psi4.energy('MP2', return_wfn=True)
-        
-        # Relevant Variables
-        natoms = mol.natom()
-        nmo = wfn.nmo()
-        nocc = wfn.doccpi()[0]
-        nvir = nmo - nocc
-        
-        # MO Coefficients
-        C = wfn.Ca_subset("AO", "ALL")
-        npC = psi4.core.Matrix.to_array(C)
-        
-        # Integral generation from Psi4's MintsHelper
-        mints = psi4.core.MintsHelper(wfn.basisset())
-        
-        # Build T, V, and S
-        T = mints.ao_kinetic()
-        npT = psi4.core.Matrix.to_array(T)
-        V = mints.ao_potential()
-        npV = psi4.core.Matrix.to_array(V)
-        S = mints.ao_overlap()
-        npS = psi4.core.Matrix.to_array(S)
-        
-        # Build ERIs
-        ERI = mints.mo_eri(C, C, C, C)
-        npERI = psi4.core.Matrix.to_array(ERI)
-        # Physicist notation
-        npERI = npERI.swapaxes(1, 2)
-        
-        # Build Core Hamiltonian in AO basis
-        H_core = npT + npV
-        
-        # Transform H to MO basis
-        H = np.einsum('uj,vi,uv', npC, npC, H_core, optimize=True)
-        
-        # Build Fock Matrix
-        F = H + 2.0 * np.einsum('pmqm->pq', npERI[:, :nocc, :, :nocc], optimize=True)
-        F -= np.einsum('pmmq->pq', npERI[:, :nocc, :nocc, :], optimize=True)
-        
-        # Occupied and Virtual Orbital Energies
-        F_occ = np.diag(F)[:nocc]
-        F_vir = np.diag(F)[nocc:nmo]
-        
-        # Build Denominator
-        Dijab = F_occ.reshape(-1, 1, 1, 1) + F_occ.reshape(-1, 1, 1) - F_vir.reshape(
-            -1, 1) - F_vir
-        
-        # Build T2 Amplitudes,
-        # where t2 = <ij|ab> / (e_i + e_j - e_a - e_b),
-        t2 = npERI[:nocc, :nocc, nocc:, nocc:] / Dijab
-        
         # Build T2_tilde Amplitudes (closed-shell spin-free analog of antisymmetrizer),
         # i.e., t2_tilde[p,q,r,s] = 2 * t2[p,q,r,s] - t2[p,q,s,r]),
         # where t2_tilde = [2<ij|ab> - <ij|ba>] / (e_i + e_j - e_a - e_b)
         t2_tilde = 2 * t2 - t2.swapaxes(2, 3)
-        # }}}
+
+        # Build MP2 one- and two-particle density matrices
+        # see MP2 Gradient code in Psi4Numpy for details
 
         # Build MP2 OPDM
         # {{{
@@ -167,8 +98,6 @@ def make_dtr(mol,theory,bas,x=300,st=0.05,graph=False):
         # Build the density tensor representation
         # {{{
         # sort PDMs by magnitude (sorted(x,key=abs) will ignore sign) 
-#        Ppq = sorted(Ppq.ravel(),key=abs)[-x:]
-#        Ppqrs = sorted(Ppqrs.ravel(),key=abs)[-x:]
         Ppq = sorted(Ppq.ravel())[-x:]
         Ppqrs = sorted(Ppqrs.ravel())[-x:]
 
