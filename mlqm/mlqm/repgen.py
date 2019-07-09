@@ -119,7 +119,7 @@ def make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
         print("Density tensor representations not available for this method.")
         raise RuntimeError("DTR not supported for {}".format(theory))
 
-    return np.asarray(dtr), wfn
+    return np.asarray(dtr)
 # }}}
 
 def gaus(x, u, s):
