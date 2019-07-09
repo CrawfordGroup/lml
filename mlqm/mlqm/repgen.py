@@ -98,8 +98,8 @@ def make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
         # Build the density tensor representation
         # {{{
         # sort PDMs by magnitude (sorted(x,key=abs) will ignore sign) 
-        Ppq = sorted(Ppq.ravel())[-x:]
-        Ppqrs = sorted(Ppqrs.ravel())[-x:]
+        Ppq = sorted(Ppq.ravel(),key=abs)[-x:]
+        Ppqrs = sorted(Ppqrs.ravel(),key=abs)[-x:]
 
         # make a discretized gaussian using the PDMs
         dtr = [] # store eq vals
