@@ -1,0 +1,18 @@
+{
+    "setup": {
+        "name": "h2",
+        "valtype": "CCSD",
+        "predtype": "MP2",
+        "M": 12,
+        "N": 200,
+        "st": 0.05,
+        "K": 30
+    },
+    "data": {
+        "trainers": false,
+        "hypers": false,
+        "s": false,
+        "l": false,
+        "a": false 
+    }
+}
