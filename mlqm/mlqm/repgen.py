@@ -58,7 +58,7 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
 
 def make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
 # {{{
-    if theory == "MP2":
+    if method == "MP2":
         # Build T2_tilde Amplitudes (closed-shell spin-free analog of antisymmetrizer),
         # i.e., t2_tilde[p,q,r,s] = 2 * t2[p,q,r,s] - t2[p,q,s,r]),
         # where t2_tilde = [2<ij|ab> - <ij|ba>] / (e_i + e_j - e_a - e_b)
@@ -117,7 +117,7 @@ def make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
 
     else:
         print("Density tensor representations not available for this method.")
-        raise RuntimeError("DTR not supported for {}".format(theory))
+        raise RuntimeError("DTR not supported for {}".format(method))
 
     return np.asarray(dtr)
 # }}}
