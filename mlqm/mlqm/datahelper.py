@@ -128,7 +128,6 @@ def get_amps(wfn,method):
         # no python access to MP2 amps, compute them by hand
         # See Psi4NumPy MP2 Gradient code
         # Relevant Variables
-        natoms = mol.natom()
         nmo = wfn.nmo()
         nocc = wfn.doccpi()[0]
         nvir = nmo - nocc
