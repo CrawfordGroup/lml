@@ -10,7 +10,7 @@ def train(ds, **kwargs):
     Pass in a Dataset with grand representations and values, and a list of training points
     Training representations and values will be pulled from ds.grand
     Hyperparameters and coefficients will be determined and saved to ds.data
-    Returns trained dataset
+    Returns trained dataset and the average of the training values
     """
 
     t_REPS = [ds.grand['representations'][tr] for tr in ds.data['trainers']]

@@ -6,11 +6,15 @@ import numpy as np
 import json
 from . import train
 from . import datahelper
+from . import krr
 
 class PES(object):
     """
     A class for holding the information necessary for generating a potential 
     energy surface. Base geometries, displacements, etc. are included here.
+    Run pes.generate() to generate input files across the PES, and pes.run()
+    to automatically go through the directories and run each input file.
+    Check the respective fn docstrings to see extra capabilities.
     """
 
     def __init__(self,inp):
@@ -62,12 +66,40 @@ class PES(object):
         self.dirlist = None # directory list, may be generated or pushed in later
     # }}}
 
+    def save(self, loc=False):
+        # {{{
+        if self.inpf:
+            loc_str = self.inpf
+        else:
+            loc_str = loc
+        settings = {
+           "inpf": loc_str,
+           "name": self.name,
+           "geom": self.geom,
+           "method": self.method,
+           "pts": self.pts,
+           "gvar": self.gvar,
+           "dis": self.dis,
+           "basis": self.basis,
+           "generated": self.generated,
+           "complete": self.complete 
+        }
+        with open(loc_str,'w') as f:
+            json.dump(settings,f,indent=4)
+        # }}}
+
     def generate(self, global_options=False, regen=False,**kwargs):
         # {{{
         '''
         Generate the input files across a PES.
         Require the method and psi4.set_options dictionary.
         Pass kwargs forward into the input file generation.
+        Note that datahelper.grabber() can get any variable from a Psi4 output 
+        JSON, as well as load data from any arbitrarily-named NumPy file!
+        Example: if you pass `extra = "np.save('amps.npy',t1_amps)`,
+        this will be placed at the bottom of every input file.
+        Then, you can run grabber(dirlist,fnames=['amps.npy']) and the
+        returned result dict will include your amplitudes!
         '''
         # generate the grand data set representations
         # 'pts' evenly-spaced representations on the PES
@@ -108,9 +140,10 @@ class PES(object):
             datahelper.write_psi4_input(new_geom,self.method,global_options,**kwargs)
 
         self.dirlist = dlist
+        self.generated = True
     
         print('PES input files generated! Please run them using the given directory '
-              'list. Once complete, you may parse them with pes.parse().')
+              'list. Once complete, you may parse them with dataheler.grabber().')
     
         return dlist
         # }}}
@@ -122,9 +155,6 @@ class PES(object):
         NOTE: This simply runs all jobs one-by-one. This is not recommended for large
         datasets, as you are better served running the generated input files
         in parallel. Use at your own risk!
-        NOTE: This function could be swapped for a more robust system which keeps 
-        track of whether or not jobs have been run, can restart where it left off,
-        or other such fancy things. But for now, this is what I'm doing.
         '''
         if self.dirlist == None:
             print('Please pass a directory list into PES.dirlist or have it set '
@@ -202,18 +232,63 @@ class Dataset(object):
             print("Empty Dataset loaded.")
     # }}}
 
-    def load(self, loc_str):
+    def load(self, inpf=None, reps=None, vals=None):
         # {{{
-        pass
+        '''
+        Pass in either a STR json filepath or DICT for setup, data, and grand.
+        '''
+        if inpf is not None:
+            if isinstance(inpf,str):
+                with open(inpf,'r') as f:
+                    inp = json.load(f)
+                self.inpf = inpf
+                self.setup = inp['setup']
+                self.data = inp['data']
+            elif isinstance(inpf,dict):
+                self.inpf = None
+                self.setup = inpf['setup']
+                self.data = inp['data']
+            else:
+                print("Please pass in either a STR json filepath or DICT.")
+
+        if reps is not None:
+            if isinstance(reps,str):
+                self.grand["representations"] = np.load(reps)
+            elif isinstance(reps,np.ndarray):
+                self.grand["representations"] = reps
+            elif isinstance(reps,list):
+                self.grand["representations"] = np.asarray(reps)
+            else:
+                raise RuntimeError("""Please pass in a STR numpy filepath, numpy.ndarray, or 
+                        list of representations.""")
+
+        if vals is not None:
+            if isinstance(vals,str):
+                self.grand["values"] = np.load(vals)
+            elif isinstance(vals,np.ndarray):
+                self.grand["values"] = vals
+            elif isinstance(vals,list):
+                self.grand["values"] = np.asarray(vals)
+            else:
+                raise RuntimeError("""Please pass in a STR numpy filepath, numpy.ndarray, or 
+                        list of values.""")
         # }}}
 
-    def save(self, loc_str):
+    def save(self, loc=False):
         # {{{
-        pass
+        if self.inpf:
+            loc_str = self.inpf
+        else:
+            loc_str = loc
+        with open(loc_str,'w') as f:
+            json.dump({'setup':self.setup,'data':self.data},f,indent=4)
         # }}}
 
     def find_trainers(self, traintype, **kwargs):
-     # {{{
+    # {{{
+        '''
+        Passes the dataset and any kwargs into the appropriate training set optimization.
+        '''
         if "remove" in kwargs:
             print("NOTE: Trainer map will be valid for grand data set once removed points are dropped!")
         if traintype.lower() in ["kmeans","k-means","k_means"]:
@@ -225,7 +300,7 @@ class Dataset(object):
             if "trainers" in self.data:
                 if self.data['trainers'] is not False:
                     print("{} training set already generated.".format(traintype))
-                    return ds.data['trainers']
+                    return self.data['trainers']
                 else:
                     pass
             self.data['trainers'] = False
@@ -240,14 +315,15 @@ class Dataset(object):
             raise RuntimeError("I don't know how to get {} training points yet!".format(traintype))
     # }}}
 
-    def gen_grand(self, gen_type, **kwargs):
-    # {{{
+    def train(self, traintype, **kwargs):
+        # {{{
         '''
-        DEPRECATION WARNING: moving data generation out of the dataset class!
+        Passes the dataset and any kwargs into the appropriate training set optimization.
         '''
-        if gen_type.lower() in ["pes"]:
-            self.grand["representations"], self.grand["values"], self.grand["reference"] = datahelper.pes_gen(self, **kwargs)
+        if traintype.lower() in ["krr","kernel_ridge"]:
+            print("Training via the {} algorithm . . .".format(traintype))
+            ds, t_AVG = krr.train(self, **kwargs) 
+            return ds, t_AVG
         else:
-            print("Generation of {} data not supported.".format(gen_type))
-    # }}}
-
+            raise RuntimeError("Cannot train using {} yet.".format(traintype))
+        # }}}
