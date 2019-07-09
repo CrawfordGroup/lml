@@ -3,9 +3,6 @@ import numpy as np
 from numpy import linalg as la
 from . import datahelper
 
-#
-#def krr(treps,tvals,loss=datahelper.reg_l2,**kwargs):
-
 def k_means(pts,M,**kwargs):
     # {{{
     '''
