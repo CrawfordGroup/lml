@@ -37,6 +37,11 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     else:
         module_options = False
 
+    if 'processors' in kwargs:
+        processors = kwargs['processors']
+    else:
+        processors = False
+
     if 'extra' in kwargs: 
         extra = kwargs['extra']
     else:
@@ -47,6 +52,8 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     infile.write('import json\n')
     infile.write('import psi4\n')
     infile.write('psi4.core.set_output_file("output.dat")\n\n')
+    if processors:
+        infile.write('psi4.set_num_threads({})\n\n'.format(processors))
     infile.write('mol = psi4.geometry("""\n{}\n""")\n\n'.format(molstr))
     infile.write('psi4.set_options(\n{}\n)\n\n'.format(global_options))
     if module_options:
@@ -58,16 +65,16 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
         infile.write('{}'.format(extra))
     # }}}
 
-def runner(dlist,infile='input.dat'):
+def runner(dlist,infile='input.dat',outfile='output.dat'):
     # {{{
     '''
     Run every input in the directory list
-    Default input file recommended
+    Default input and output files recommended
     '''
     wd = os.getcwd()
     for d in dlist:
         os.chdir(d)
-        subprocess.call(['psi4', 'input.dat', 'output.dat']) 
+        subprocess.call(['psi4', infile, outfile]) 
         os.chdir(wd)
     # }}}
 

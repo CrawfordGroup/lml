@@ -148,7 +148,7 @@ class PES(object):
         return dlist
         # }}}
 
-    def run(self,infile='input.dat',restart=False):
+    def run(self,infile='input.dat',outfile='output.dat',restart=False):
         # {{{
         '''
         Run all jobs listed in self.dirlist (may be set manually or by PES.generate())
@@ -164,7 +164,7 @@ class PES(object):
             print('PES jobs already complete! Pass `restart=True` to rerun.')
             return 0
         else:
-            datahelper.runner(self.dirlist,infile=infile)
+            datahelper.runner(self.dirlist,infile=infile,outfile=outfile)
             self.complete = True
             return 0
         # }}}
