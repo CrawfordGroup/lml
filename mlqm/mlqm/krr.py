@@ -130,7 +130,7 @@ def solve_alpha(K,Y,l=0):
     give Kernel matrix and training matrix
     optional lambda parameter
     '''
-    return la.solve((K-l*np.eye(len(Y))),Y)
+    return la.solve((K+l*np.eye(len(Y))),Y)
 # }}}
 
 def make_k(rep1, rep2, s):
@@ -141,7 +141,7 @@ def make_k(rep1, rep2, s):
     rep1 = np.asarray(rep1)
     rep2 = np.asarray(rep2)
     tmp = la.norm(rep1 - rep2)
-    return np.exp(-1 * tmp**2 / (2.0*s**2))
+    return np.exp(-1.0 * tmp**2.0 / (2.0*s**2.0))
 # }}}
 
 def find_hypers(t_y,t_reps,k):
@@ -153,14 +153,16 @@ def find_hypers(t_y,t_reps,k):
 def grid_search(tr_x,val_x,tr_y,val_y):
 # {{{
     mse = 1E9
-    s_list = np.logspace(-5,8,num=16)
-    l_list = np.logspace(-8,-1,num=16)
+    # go from high values of s,l to low values
+    s_list = sorted(np.logspace(-10,10,num=50),reverse=True)
+    l_list = sorted(np.logspace(-10,10,num=50),reverse=True)
     for s in s_list:
         for l in l_list:
             a = train_a(tr_x,tr_y,s,l)
             y_p = pred(val_x,tr_x,a,s,l)
             new_mse = abs(datahelper.reg_l2(val_y,y_p,l,a))
-            if new_mse <= mse:
+#            if new_mse <= mse: # keep lowest s,l values if error is same
+            if new_mse < mse: # keep highest s,l values if error is same
                 s_f = s
                 l_f = l
                 mse = new_mse

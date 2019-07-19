@@ -131,46 +131,38 @@ def get_amps(wfn,method):
         nmo = wfn.nmo()
         nocc = wfn.doccpi()[0]
         nvir = nmo - nocc
-        
+
         # MO Coefficients
         C = wfn.Ca_subset("AO", "ALL")
         npC = psi4.core.Matrix.to_array(C)
-        
+
         # Integral generation from Psi4's MintsHelper
-        mints = psi4.core.MintsHelper(wfn.basisset())
-        
         # Build T, V, and S
+        mints = psi4.core.MintsHelper(wfn.basisset())
         T = mints.ao_kinetic()
         npT = psi4.core.Matrix.to_array(T)
         V = mints.ao_potential()
         npV = psi4.core.Matrix.to_array(V)
         S = mints.ao_overlap()
         npS = psi4.core.Matrix.to_array(S)
-        
+
         # Build ERIs
         ERI = mints.mo_eri(C, C, C, C)
         npERI = psi4.core.Matrix.to_array(ERI)
-        # Physicist notation
-        npERI = npERI.swapaxes(1, 2)
-        
-        # Build Core Hamiltonian in AO basis
-        H_core = npT + npV
-        
-        # Transform H to MO basis
-        H = np.einsum('uj,vi,uv', npC, npC, H_core, optimize=True)
-        
-        # Build Fock Matrix
+        npERI = npERI.swapaxes(1, 2) # Physicist notation
+
+        # Build Core Hamiltonian and Fock 
+        H_core = npT + npV # AO basis
+        H = np.einsum('uj,vi,uv', npC, npC, H_core, optimize=True) # MO basis
         F = H + 2.0 * np.einsum('pmqm->pq', npERI[:, :nocc, :, :nocc], optimize=True)
         F -= np.einsum('pmmq->pq', npERI[:, :nocc, :nocc, :], optimize=True)
-        
-        # Occupied and Virtual Orbital Energies
         F_occ = np.diag(F)[:nocc]
         F_vir = np.diag(F)[nocc:nmo]
-        
+
         # Build Denominator
         Dijab = F_occ.reshape(-1, 1, 1, 1) + F_occ.reshape(-1, 1, 1) - F_vir.reshape(
             -1, 1) - F_vir
-        
+
         # Build T2 Amplitudes,
         # where t2 = <ij|ab> / (e_i + e_j - e_a - e_b),
         t2 = npERI[:nocc, :nocc, nocc:, nocc:] / Dijab
@@ -190,7 +182,8 @@ def reg_l2(y,y_p,l,a):
     large norm squared regression coefficients
     given true and predicted values, regularization, and regression coefficients
     '''
-    ls = sum([(y_p[i] - y[i])**2 for i in range(len(y))]) + l*np.linalg.norm(a)**2
+#    ls = sum([(y_p[i] - y[i])**2 for i in range(len(y))]) / len(y)
+    ls = np.linalg.norm(y-y_p)**2 + l*np.linalg.norm(a)**2
     return ls
 # }}}
 
