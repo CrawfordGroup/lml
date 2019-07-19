@@ -126,25 +126,46 @@ def get_amps(wfn,method):
     elif method.upper() == "MP2":
     # {{{
         # no python access to MP2 amps, compute them by hand
-        # see spin-orbital CCSD code in Psi4Numpy
+        # See Psi4NumPy MP2 Gradient code
+        # Relevant Variables
+        nmo = wfn.nmo()
+        nocc = wfn.doccpi()[0]
+        nvir = nmo - nocc
+
+        # MO Coefficients
+        C = wfn.Ca_subset("AO", "ALL")
+        npC = psi4.core.Matrix.to_array(C)
+
+        # Integral generation from Psi4's MintsHelper
+        # Build T, V, and S
         mints = psi4.core.MintsHelper(wfn.basisset())
-        nocc = wfn.doccpi()[0] * 2
-        nvirt = wfn.nmo()*2 - nocc
-        MO = np.asarray(mints.mo_spin_eri(wfn.Ca(), wfn.Ca()))
-        o = slice(0, nocc)
-        v = slice(nocc, MO.shape[0])
-        H = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
-        H = np.einsum('uj,vi,uv', wfn.Ca(), wfn.Ca(), H)
-        H = np.repeat(H, 2, axis=0)
-        H = np.repeat(H, 2, axis=1)
-        spin_ind = np.arange(H.shape[0], dtype=np.int) % 2
-        H *= (spin_ind.reshape(-1, 1) == spin_ind)
-        MOijab = MO[o, o, v, v]
-        F = H + np.einsum('pmqm->pq', MO[:, o, :, o])
-        Focc = F[np.arange(nocc), np.arange(nocc)].flatten()
-        Fvirt = F[np.arange(nocc, nvirt + nocc), np.arange(nocc, nvirt + nocc)].flatten()
-        Dijab = Focc.reshape(-1, 1, 1, 1) + Focc.reshape(-1, 1, 1) - Fvirt.reshape(-1, 1) - Fvirt
-        t2 = MOijab / Dijab
+        T = mints.ao_kinetic()
+        npT = psi4.core.Matrix.to_array(T)
+        V = mints.ao_potential()
+        npV = psi4.core.Matrix.to_array(V)
+        S = mints.ao_overlap()
+        npS = psi4.core.Matrix.to_array(S)
+
+        # Build ERIs
+        ERI = mints.mo_eri(C, C, C, C)
+        npERI = psi4.core.Matrix.to_array(ERI)
+        npERI = npERI.swapaxes(1, 2) # Physicist notation
+
+        # Build Core Hamiltonian and Fock 
+        H_core = npT + npV # AO basis
+        H = np.einsum('uj,vi,uv', npC, npC, H_core, optimize=True) # MO basis
+        F = H + 2.0 * np.einsum('pmqm->pq', npERI[:, :nocc, :, :nocc], optimize=True)
+        F -= np.einsum('pmmq->pq', npERI[:, :nocc, :nocc, :], optimize=True)
+        F_occ = np.diag(F)[:nocc]
+        F_vir = np.diag(F)[nocc:nmo]
+
+        # Build Denominator
+        Dijab = F_occ.reshape(-1, 1, 1, 1) + F_occ.reshape(-1, 1, 1) - F_vir.reshape(
+            -1, 1) - F_vir
+
+        # Build T2 Amplitudes,
+        # where t2 = <ij|ab> / (e_i + e_j - e_a - e_b),
+        t2 = npERI[:nocc, :nocc, nocc:, nocc:] / Dijab
         amps = {'t2':t2}
         # }}}
 
@@ -161,7 +182,8 @@ def reg_l2(y,y_p,l,a):
     large norm squared regression coefficients
     given true and predicted values, regularization, and regression coefficients
     '''
-    ls = sum([(y_p[i] - y[i])**2 for i in range(len(y))]) + l*np.linalg.norm(a)**2
+#    ls = sum([(y_p[i] - y[i])**2 for i in range(len(y))]) / len(y)
+    ls = np.linalg.norm(y-y_p)**2 + l*np.linalg.norm(a)**2
     return ls
 # }}}
 

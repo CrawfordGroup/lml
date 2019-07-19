@@ -56,6 +56,72 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return np.asarray(tatr)
 # }}}
 
+def make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
+# {{{
+    if method == "MP2":
+        # Build T2_tilde Amplitudes (closed-shell spin-free analog of antisymmetrizer),
+        # i.e., t2_tilde[p,q,r,s] = 2 * t2[p,q,r,s] - t2[p,q,s,r]),
+        # where t2_tilde = [2<ij|ab> - <ij|ba>] / (e_i + e_j - e_a - e_b)
+        t2_tilde = 2 * t2 - t2.swapaxes(2, 3)
+
+        # Build MP2 one- and two-particle density matrices
+        # see MP2 Gradient code in Psi4Numpy for details
+
+        # Build MP2 OPDM
+        # {{{
+        Ppq = np.zeros((nmo, nmo))
+        
+        # Build OO block of MP2 OPDM
+        # Pij = - 1/2 sum_kab [( t2(i,k,a,b) * t2_tilde(j,k,a,b) ) + ( t2(j,k,a,b) * t2_tilde(i,k,a,b) )]
+        Pij = -0.5 * np.einsum('ikab,jkab->ij', t2, t2_tilde, optimize=True)
+        Pij += -0.5 * np.einsum('jkab,ikab->ij', t2, t2_tilde, optimize=True)
+        
+        # Build VV block of MP2 OPDM
+        # Pab = 1/2 sum_ijc [( t2(i,j,a,c) * t2_tilde(i,j,b,c) ) + ( t2(i,j,b,c) * t2_tilde(i,j,a,c) )]
+        Pab = 0.5 * np.einsum('ijac,ijbc->ab', t2, t2_tilde, optimize=True)
+        Pab += 0.5 * np.einsum('ijbc,ijac->ab', t2, t2_tilde, optimize=True)
+        
+        # Build Total OPDM
+        Ppq[:nocc, :nocc] = Pij
+        Ppq[nocc:, nocc:] = Pab
+        # }}}
+
+        # Build MP2 TPDM
+        # {{{
+        Ppqrs = np.zeros((nmo, nmo, nmo, nmo))
+        
+        # Build <OO|VV> and <VV|OO> blocks of MP2 TPDM
+        Ppqrs[:nocc, :nocc, nocc:, nocc:] = t2
+        Ppqrs[nocc:, nocc:, :nocc, :nocc] = t2.T
+        # }}}
+
+        # Build the density tensor representation
+        # {{{
+        # sort PDMs by magnitude (sorted(x,key=abs) will ignore sign) 
+        Ppq = sorted(Ppq.ravel(),key=abs)[-x:]
+        Ppqrs = sorted(Ppqrs.ravel(),key=abs)[-x:]
+
+        # make a discretized gaussian using the PDMs
+        dtr = [] # store eq vals
+        x_list = np.linspace(-1,1,x)
+        for i in range(0,x):
+            val1 = 0
+            val2 = 0
+            for p_1 in range(0,len(Ppq)):
+                val1 += gaus(x_list[i],Ppq[p_1],st)
+            for p_2 in range(0,len(Ppqrs)):
+                val2 += gaus(x_list[i],Ppqrs[p_2],st)
+            dtr.append(val1)
+            dtr.append(val2)
+        # }}}
+
+    else:
+        print("Density tensor representations not available for this method.")
+        raise RuntimeError("DTR not supported for {}".format(method))
+
+    return np.asarray(dtr)
+# }}}
+
 def gaus(x, u, s):
 # {{{
     '''
