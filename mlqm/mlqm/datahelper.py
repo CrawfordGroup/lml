@@ -112,6 +112,10 @@ def get_amps(wfn,method):
     Grab aomplutudes from the wfn
     CCSD just uses wfn.get_amplitudes()
     MP2 builds them from the integrals, Fock, and Hamiltonian
+    NOTE: wfn.get_amplitudes() only works for C1 symmetry, 
+    and the MP2 amplitude generation is only intended for C1
+    symmetry (AO->MO transformation done w/out regard for
+    AO->SO transformation)
     Returns dictionary with amplitudes
     '''
     if method.upper() == "CCSD":
@@ -174,6 +178,38 @@ def get_amps(wfn,method):
     
     return amps
     # }}}
+
+def harvest_amps(method,namps=150,outfile="output.dat"):
+    """
+    Harvest amplitudes from an output file. Useful for when
+    get_amps() cannot be used (ie symmetry not C1)
+    """
+    if method.upper() == "MP2":
+        # MP2 amps print before CCSD amps
+        mcheck = "Largest TIjAb Amplitudes:"
+        amps = {'t2':[]}
+#    elif method.upper() == "CCSD":
+#        # Convergence is always printed before CCSD amps
+#        mcheck = "Iterations converged."
+#        amps = {'t1':[],'t2':[]}
+    else:
+        raise Exception("Cannot harvest {} amplitudes.".format(method))
+
+
+    get_line = 0
+    get_next = 0
+    with open(outfile) as f:
+        for line in outfile:
+            if (get_next == 1) & (get_line < namps):
+                try:
+                    _,_,_,_,amp = line.split()
+                    amps['t1'].append(float(amp))
+                    get_line += 1
+                except:
+                    pass
+            if mcheck in outfile:
+                get_next += 1
+    return amps
 
 def reg_l2(y,y_p,l,a):
 # {{{
