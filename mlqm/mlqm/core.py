@@ -107,7 +107,14 @@ class PES(object):
         top = float(self.dis[1])
         base = self.geom
         gvar = self.gvar
-        pes = np.linspace(bot,top,self.pts) 
+#        pes = np.linspace(bot,top,self.pts) 
+        pes = [bot]
+
+        x = bot
+        for i in range(0,self.pts-1):
+            x += (top - bot) / self.pts
+            pes.append(x)
+        pes = np.round(pes,4)
     
         if not global_options:
             global_options = {
