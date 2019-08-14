@@ -53,6 +53,9 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
         print("I don't know how to handle {} amplitudes.".format(method))
         raise Exception("{} amplitude representations not supported!".format(method))
 
+#    # normalize to integral(TATR) = 1
+#    tatr = [i/sum(tatr) for i in tatr]
+
     return np.asarray(tatr)
 # }}}
 
@@ -128,7 +131,7 @@ def gaus(x, u, s):
     return a gaussian centered on u with width s
     note: we're using x within [-1,1]
     '''
-    return np.exp(-(x-u)**2 / (2.0*s**2))
+    return np.exp(-1 * (x-u)**2 / (2.0*s**2))
 # }}}
 
 def legacy_CCSD_NAT():
