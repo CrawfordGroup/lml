@@ -67,16 +67,30 @@ def cen_err(maps):
     Return the stddv of the mean center->point diffs
     Also return the positions of the closest points to each center
     '''
+    min_diff = -1
+
     errors = []
     close_pts = []
     for i in range(0,len(maps)): # loop over centers
         cen = np.mean([c[0] for c in maps[i]],axis=0) # mean of coords in center i
         diffs = [] # hold diffs for center i
         for j in range(0,len(maps[i])): # loop over points
-            diffs.append(la.norm(maps[i][j][0] - cen)) # norm of diff btwn point and cen
-        errors.append(np.mean(diffs)) # store the mean error for center i
+
+#            diffs.append(la.norm(maps[i][j][0] - cen)) # norm of diff btwn point and cen
+#        errors.append(np.mean(diffs)) # store the mean error for center i
+#        close_pts.append(np.argmin(diffs)) # store the position of the closest point to center i
+#    return np.std(errors), close_pts
+
+
+            diff = -2 * np.dot(maps[i][j][0],cen)
+            diff += la.norm(maps[i][j][0]) ** 2.0
+            diff += la.norm(cen) ** 2.0
+            diffs.append(diff)
+            if min_diff == -1 or diff < min_diff:
+                min_diff = diff
+        errors.append(min_diff) # store the lowest diff for center i 
         close_pts.append(np.argmin(diffs)) # store the position of the closest point to center i
-    return np.std(errors), close_pts
+    return sum(errors), close_pts
 # }}}
 
 def cluster(pts,M,cens):
