@@ -5,3 +5,4 @@ These are generally Jupyter notebooks designed to walk the reader through variou
 ### Current tutorials:
 * Linear regression with cross-validation
 * Clustering with the k-means algorithm 
+* Gaussian process regression
