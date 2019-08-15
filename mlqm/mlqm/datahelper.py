@@ -180,6 +180,7 @@ def get_amps(wfn,method):
     # }}}
 
 def harvest_amps(method,namps=150,outfile="output.dat"):
+# {{{
     """
     Harvest amplitudes from an output file. Useful for when
     get_amps() cannot be used (ie symmetry not C1)
@@ -195,21 +196,26 @@ def harvest_amps(method,namps=150,outfile="output.dat"):
     else:
         raise Exception("Cannot harvest {} amplitudes.".format(method))
 
-
     get_line = 0
     get_next = 0
     with open(outfile) as f:
-        for line in outfile:
+        for line in f:
             if (get_next == 1) & (get_line < namps):
                 try:
                     _,_,_,_,amp = line.split()
-                    amps['t1'].append(float(amp))
+                    amps['t2'].append(float(amp))
                     get_line += 1
                 except:
                     pass
-            if mcheck in outfile:
+            elif mcheck in line:
                 get_next += 1
+            else:
+                pass
+
+    for t in amps:
+        amps[t] = np.asarray(amps[t])
     return amps
+# }}}
 
 def reg_l2(y,y_p,l,a):
 # {{{
