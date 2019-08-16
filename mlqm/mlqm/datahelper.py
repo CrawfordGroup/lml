@@ -183,32 +183,49 @@ def harvest_amps(method,namps=150,outfile="output.dat"):
 # {{{
     """
     Harvest amplitudes from an output file. Useful for when
-    get_amps() cannot be used (ie symmetry not C1)
+    get_amps() cannot be used (ie symmetry not C1). Currently
+    only implemented for RHF reference (TIA and TIjAb amps)
     """
     if method.upper() == "MP2":
         # MP2 amps print before CCSD amps
-        mcheck = "Largest TIjAb Amplitudes:"
+        mcheck = ["Largest TIjAb Amplitudes:"]
+        ttype = ['t2']
         amps = {'t2':[]}
-#    elif method.upper() == "CCSD":
-#        # Convergence is always printed before CCSD amps
-#        mcheck = "Iterations converged."
-#        amps = {'t1':[],'t2':[]}
+    elif method.upper() == "CCSD":
+        mcheck = ["Largest TIA Amplitudes:","Largest TIjAb Amplitudes:"]
+        ttype = ['t1','t2']
+        amps = {'t1':[],'t2':[]}
     else:
         raise Exception("Cannot harvest {} amplitudes.".format(method))
 
     get_line = 0
     get_next = 0
+    t = 0 # amplitudes will always be printed in order t1, t2, t3 . . .
     with open(outfile) as f:
         for line in f:
             if (get_next == 1) & (get_line < namps):
+                if (t < len(ttype) - 1):
+                    if mcheck[t+1] in line: # just in case amps run out before namps
+                        get_line = 0
+                        t += 1
+                        pass
                 try:
-                    _,_,_,_,amp = line.split()
-                    amps['t2'].append(float(amp))
+                    if ttype[t] == 't1':
+                        _,_,amp = line.split()
+                    elif ttype[t] == 't2':
+                        _,_,_,_,amp = line.split()
+                    else:
+                        raise Exception("Can't handle {} amps just yet!".format(ttype[t]))
+                    amps[ttype[t]].append(float(amp))
                     get_line += 1
                 except:
                     pass
-            elif mcheck in line:
+            elif mcheck[t] in line:
                 get_next += 1
+            elif (get_line >= namps) and (t < len(ttype) - 1):
+                get_line = 0
+                get_next = 0
+                t += 1
             else:
                 pass
 
