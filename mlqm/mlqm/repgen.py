@@ -53,9 +53,6 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
         print("I don't know how to handle {} amplitudes.".format(method))
         raise Exception("{} amplitude representations not supported!".format(method))
 
-#    # normalize to integral(TATR) = 1
-#    tatr = [i/sum(tatr) for i in tatr]
-
     return np.asarray(tatr)
 # }}}
 
