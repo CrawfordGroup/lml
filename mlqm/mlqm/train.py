@@ -75,13 +75,6 @@ def cen_err(maps):
         cen = np.mean([c[0] for c in maps[i]],axis=0) # mean of coords in center i
         diffs = [] # hold diffs for center i
         for j in range(0,len(maps[i])): # loop over points
-
-#            diffs.append(la.norm(maps[i][j][0] - cen)) # norm of diff btwn point and cen
-#        errors.append(np.mean(diffs)) # store the mean error for center i
-#        close_pts.append(np.argmin(diffs)) # store the position of the closest point to center i
-#    return np.std(errors), close_pts
-
-
             diff = -2 * np.dot(maps[i][j][0],cen)
             diff += la.norm(maps[i][j][0]) ** 2.0
             diff += la.norm(cen) ** 2.0
