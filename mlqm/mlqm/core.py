@@ -210,7 +210,7 @@ class Dataset(object):
             elif isinstance(inpf,dict):
                 self.inpf = None
                 self.setup = inpf['setup']
-                self.data = inp['data']
+                self.data = inpf['data']
             else:
                 print("Please pass in either a STR json filepath or DICT.")
 
@@ -257,7 +257,7 @@ class Dataset(object):
             elif isinstance(inpf,dict):
                 self.inpf = None
                 self.setup = inpf['setup']
-                self.data = inp['data']
+                self.data = inpf['data']
             else:
                 print("Please pass in either a STR json filepath or DICT.")
 
