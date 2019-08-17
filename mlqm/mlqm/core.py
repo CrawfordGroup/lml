@@ -88,7 +88,7 @@ class PES(object):
             json.dump(settings,f,indent=4)
         # }}}
 
-    def generate(self, global_options=False, regen=False,**kwargs):
+    def generate(self, global_options=False, pestype='INCLUDE', regen=False,**kwargs):
         # {{{
         '''
         Generate the input files across a PES.
@@ -107,7 +107,17 @@ class PES(object):
         top = float(self.dis[1])
         base = self.geom
         gvar = self.gvar
-        pes = np.linspace(bot,top,self.pts) 
+        if pestype.upper() == "INCLUDE":
+            pes = np.linspace(bot,top,self.pts) 
+        elif pestype.upper() == "EXCLUDE":
+            pes = [bot]
+            x = bot
+            for i in range(0,self.pts-1):
+                x += (top - bot) / self.pts
+                pes.append(x)
+            pes = np.round(pes,4)
+        else:
+            raise Exception("PES type {} not recognized.".format(pestype))
     
         if not global_options:
             global_options = {
@@ -200,7 +210,7 @@ class Dataset(object):
             elif isinstance(inpf,dict):
                 self.inpf = None
                 self.setup = inpf['setup']
-                self.data = inp['data']
+                self.data = inpf['data']
             else:
                 print("Please pass in either a STR json filepath or DICT.")
 
@@ -247,7 +257,7 @@ class Dataset(object):
             elif isinstance(inpf,dict):
                 self.inpf = None
                 self.setup = inpf['setup']
-                self.data = inp['data']
+                self.data = inpf['data']
             else:
                 print("Please pass in either a STR json filepath or DICT.")
 

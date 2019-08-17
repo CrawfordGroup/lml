@@ -128,7 +128,7 @@ def gaus(x, u, s):
     return a gaussian centered on u with width s
     note: we're using x within [-1,1]
     '''
-    return np.exp(-(x-u)**2 / (2.0*s**2))
+    return np.exp(-1 * (x-u)**2 / (2.0*s**2))
 # }}}
 
 def legacy_CCSD_NAT():
