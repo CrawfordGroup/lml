@@ -75,10 +75,10 @@ def make_dtr(opdm,t2,x=300,st=0.05):
     for i in range(0,x):
         val1 = 0
         val2 = 0
-        for p_1 in range(0,len(Ppq)):
-            val1 += gaus(x_list[i],Ppq[p_1],st)
-        for p_2 in range(0,len(Ppqrs)):
-            val2 += gaus(x_list[i],Ppqrs[p_2],st)
+        for p_1 in range(0,len(opdm)):
+            val1 += gaus(x_list[i],opdm[p_1],st)
+        for p_2 in range(0,len(tpdm)):
+            val2 += gaus(x_list[i],tpdm[p_2],st)
         dtr.append(val1)
         dtr.append(val2)
 
