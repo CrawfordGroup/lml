@@ -179,7 +179,7 @@ def get_amps(wfn,method):
     return amps
     # }}}
 
-def harvest_amps(method,nocc,nvir,namps=150,outfile="output.dat"):
+def harvest_amps(method,namps=150,outfile="output.dat"):
 # {{{
     """
     Harvest amplitudes from an output file. Useful for when
@@ -190,11 +190,11 @@ def harvest_amps(method,nocc,nvir,namps=150,outfile="output.dat"):
         # MP2 amps print before CCSD amps
         mcheck = ["Largest TIjAb Amplitudes:"]
         ttype = ['t2']
-        amps = {'t2':np.zeros((nocc,nocc,nvir,nvir))}
+        amps = {'t2':[]}
     elif method.upper() == "CCSD":
         mcheck = ["Largest TIA Amplitudes:","Largest TIjAb Amplitudes:"]
         ttype = ['t1','t2']
-        amps = {'t1':np.zeros((nocc,nvir)),'t2':np.zeros((nocc,nocc,nvir,nvir))}
+        amps = {'t1':[],'t2':[]}
     else:
         raise Exception("Cannot harvest {} amplitudes.".format(method))
 
@@ -211,13 +211,12 @@ def harvest_amps(method,nocc,nvir,namps=150,outfile="output.dat"):
                         pass
                 try:
                     if ttype[t] == 't1':
-                        i,a,amp = line.split()
-                        amps['t1'][int(i)][int(a)] = float(amp)
+                        _,_,amp = line.split()
                     elif ttype[t] == 't2':
-                        i,j,a,b,amp = line.split()
-                        amps['t2'][int(i)][int(j)][int(a)][int(b)] = float(amp)
+                        _,_,_,_,amp = line.split()
                     else:
                         raise Exception("Can't handle {} amps just yet!".format(ttype[t]))
+                    amps[ttype[t]].append(float(amp))
                     get_line += 1
                 except:
                     pass
