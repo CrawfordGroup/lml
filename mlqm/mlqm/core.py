@@ -301,26 +301,53 @@ class Dataset(object):
         '''
         if "remove" in kwargs:
             print("NOTE: Trainer map will be valid for grand data set once removed points are dropped!")
-        if traintype.lower() in ["kmeans","k-means","k_means"]:
-            if "K" in self.setup:
-                K = self.setup['K']
-            else:
-                K = 30
+        if "K" in self.setup:
+            K = self.setup['K']
+        else:
+            K = 30
 
-            if "trainers" in self.data:
-                if self.data['trainers'] is not False:
-                    print("{} training set already generated.".format(traintype))
-                    return self.data['trainers']
-                else:
-                    pass
-            self.data['trainers'] = False
+        if "trainers" in self.data:
+            if self.data['trainers'] is not False:
+                print("{} training set already generated.".format(traintype))
+                return self.data['trainers']
+            else:
+                pass
+        self.data['trainers'] = False
+
+        if traintype.lower() in ["kmeans","k-means","k_means"]:
+            # {{{
             print("Determining training set via {} algorithm . . .".format(traintype))
+#            trainers = []
+#            t_map, close_pts = train.k_means_loop(self.grand["representations"],self.setup['M'],K,**kwargs)
+#            for pt in range(0,self.setup['M']): # loop over centers, grab positions of trainers
+#                trainers.append(t_map[pt][close_pts[pt]][1])
+            from sklearn.cluster import KMeans
+            from sklearn.metrics import pairwise_distances_argmin_min
+            if 'remove' in kwargs:
+                print("Removing given points from validation set.")
+                pts = np.delete(self.grand["representations"],kwargs['remove'],axis=0)
+            else:
+                pts = self.grand["representations"]
+            kmeans = KMeans(n_clusters=self.setup['M'],n_init=K,tol=0).fit(pts)
+            closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_, pts)
+            trainers = sorted(closest,reverse=True)
+            trainers = [int(t) for t in trainers] # set to INT so JSON serializable
+            self.data['trainers'] = sorted(trainers, reverse=True)
+            return sorted(trainers, reverse=True)
+            # }}}
+
+        if traintype.lower() in ["home_kmeans","home_k-means","home_k_means"]:
+            # {{{
+            print("Determining training set via {} algorithm . . .".format(traintype))
+            print("NOTE: This is a home-baked k-means routine. User discretion is advised.")
             trainers = []
             t_map, close_pts = train.k_means_loop(self.grand["representations"],self.setup['M'],K,**kwargs)
             for pt in range(0,self.setup['M']): # loop over centers, grab positions of trainers
                 trainers.append(t_map[pt][close_pts[pt]][1])
             self.data['trainers'] = sorted(trainers, reverse=True)
             return sorted(trainers, reverse=True)
+            # }}}
+
         else:
             raise RuntimeError("I don't know how to get {} training points yet!".format(traintype))
     # }}}
@@ -330,10 +357,74 @@ class Dataset(object):
         '''
         Passes the dataset and any kwargs into the appropriate training set optimization.
         '''
+        if 'loss' in kwargs:
+            loss = kwargs['loss']
+        else:
+            loss = 'neg_mean_squared_error' # erratic for LiF
+#            loss = 'neg_mean_absolute_error' # erratic
+#            loss = 'explained_variance' # smooth but wrong for LiF
+#            loss = 'neg_median_absolute_error' # erratic
+            # skl default is 'r2' but it's terrible
+        if 'kernel' in kwargs:
+            kernel = kwargs['kernel']
+        else:
+            kernel = 'rbf'
+
         if traintype.lower() in ["krr","kernel_ridge"]:
+            # {{{
             print("Training via the {} algorithm . . .".format(traintype))
+#            ds, t_AVG = krr.train(self, **kwargs) 
+            from sklearn.kernel_ridge import KernelRidge
+            from sklearn.model_selection import GridSearchCV
+
+            t_REPS = [self.grand['representations'][tr] for tr in self.data['trainers']]
+            t_VALS = [self.grand['values'][tr] for tr in self.data['trainers']]
+            t_AVG = np.mean(t_VALS)
+            t_VALS = np.subtract(t_VALS,t_AVG)
+
+            # get the hypers s(igma) = kernel width and l(ambda) = regularization
+            # NOTE: while my input file uses "s" and "l", skl treats these
+            # as "gamma" and "alpha" where gamma = 1/(2*s**2) and alpha = l
+            # TODO: Depending on the kernel, s/gamma may not be necessary
+            if self.data['hypers']:
+                print("Loading hyperparameters from Dataset.")
+                gamma = 1.0 / 2.0 / self.data['s']**2 
+                alpha = self.data['l'] 
+                krr = KernelRidge(kernel=kernel,alpha=alpha,gamma=gamma)
+            else:
+                krr = KernelRidge(kernel=kernel)
+                if 'k' in kwargs:
+                    k = kwargs['k']
+                else:
+                    k = self.setup['M']
+                parameters = {'alpha':np.logspace(-12,12,num=50),
+                              'gamma':np.logspace(-12,12,num=50)}
+                krr_regressor = GridSearchCV(krr,parameters,scoring=loss,cv=k)
+                krr_regressor.fit(t_REPS,t_VALS)
+                self.data['hypers'] = True
+                self.data['s'] = 1.0 / (2*krr_regressor.best_params_['gamma'])**0.5
+                self.data['l'] = krr_regressor.best_params_['alpha']
+                krr = krr_regressor.best_estimator_
+        
+            # train for a(lpha) = regression coefficients
+            # NOTE: I call the coeffs "a" while skl uses "dual_coef"
+            if self.data['a']:
+                print("Loading coefficients from Dataset.")
+                alpha = np.asarray(self.data['a'])
+                krr.dual_coef_ = alpha
+            else:
+                print("Model training using s = {} and l = {} . . .".format(self.data['s'],self.data['l']))
+                krr.fit(t_REPS,t_VALS)
+                self.data['a'] = list(krr.dual_coef_)
+            return self, t_AVG
+            # }}}
+
+        elif traintype.lower() in ["home_krr","home_kernel_ridge"]:
+            print("Training via the {} algorithm . . .".format(traintype))
+            print("NOTE: This algorithm only includes the radial basis function with a custom loss function.")
             ds, t_AVG = krr.train(self, **kwargs) 
             return ds, t_AVG
+
         else:
             raise RuntimeError("Cannot train using {} yet.".format(traintype))
         # }}}
