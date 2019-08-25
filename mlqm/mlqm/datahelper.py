@@ -189,10 +189,12 @@ def harvest_amps(method,namps=150,outfile="output.dat"):
     if method.upper() == "MP2":
         # MP2 amps print before CCSD amps
         mcheck = ["Largest TIjAb Amplitudes:"]
+        mend = ["Solving CC Amplitude Equations"]
         ttype = ['t2']
         amps = {'t2':[]}
     elif method.upper() == "CCSD":
         mcheck = ["Largest TIA Amplitudes:","Largest TIjAb Amplitudes:"]
+        mend = ["Largest TIjAb Amplitudes:","SCF energy"]
         ttype = ['t1','t2']
         amps = {'t1':[],'t2':[]}
     else:
@@ -203,31 +205,58 @@ def harvest_amps(method,namps=150,outfile="output.dat"):
     t = 0 # amplitudes will always be printed in order t1, t2, t3 . . .
     with open(outfile) as f:
         for line in f:
-            if (get_next == 1) & (get_line < namps):
-                if (t < len(ttype) - 1):
-                    if mcheck[t+1] in line: # just in case amps run out before namps
-                        get_line = 0
-                        t += 1
-                        pass
-                try:
+            if (t+1 > len(ttype)): # harvested all ttypes
+                break
+            elif mcheck[t] in line: # found method check, start collecting amps
+                get_next = 1
+            elif (get_next == 1) and (get_line < namps): # passed mcheck, need more amps
+                if mend[t] in line: # stop collecting amps
+                    get_next = 0
+                    get_line = 0
+                    t += 1
+                    continue
+                try: # try to collect the amp
                     if ttype[t] == 't1':
-                        _,_,amp = line.split()
+                        _,_,amp = line.split() # I A amp
                     elif ttype[t] == 't2':
-                        _,_,_,_,amp = line.split()
+                        _,_,_,_,amp = line.split() # I j A b amp
                     else:
                         raise Exception("Can't handle {} amps just yet!".format(ttype[t]))
                     amps[ttype[t]].append(float(amp))
                     get_line += 1
-                except:
+                except: # probably an empty line
                     pass
-            elif mcheck[t] in line:
-                get_next += 1
-            elif (get_line >= namps) and (t < len(ttype) - 1):
-                get_line = 0
+            elif get_line >= namps: # got all of the requested amps
                 get_next = 0
                 t += 1
-            else:
+            else: # haven't hit mcheck yet
                 pass
+
+#            if (get_next == 1) & (get_line < namps):
+#                if (t < len(ttype) - 1):
+#                    if mcheck[t+1] in line: # just in case amps run out before namps
+#                        get_line = 0
+#                        t += 1
+#                        pass
+#                try:
+#                    if ttype[t] == 't1':
+#                        _,_,amp = line.split()
+#                    elif ttype[t] == 't2':
+#                        _,_,_,_,amp = line.split()
+#                    else:
+#                        raise Exception("Can't handle {} amps just yet!".format(ttype[t]))
+#                    amps[ttype[t]].append(float(amp))
+#                    get_line += 1
+#                except:
+#                    pass
+#            elif mcheck[t] in line:
+#                get_next += 1
+#            elif (get_line >= namps) and (t < len(ttype) - 1):
+#                get_line = 0
+#                get_next = 0
+#                t += 1
+#            else:
+#                pass
 
     for t in amps:
         amps[t] = np.asarray(amps[t])
