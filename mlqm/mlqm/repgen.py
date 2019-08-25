@@ -56,7 +56,7 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return np.asarray(tatr)
 # }}}
 
-def make_dtr(opdm,t2,x=300,st=0.05):
+def make_dtr(opdm,t2,x=150,st=0.05):
 # {{{
     """
     Making a DTR. Currently implemented for MP2 only.
