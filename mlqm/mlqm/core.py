@@ -4,9 +4,119 @@
 
 import numpy as np
 import json
+import copy
 from . import train
 from . import datahelper
 from . import krr
+
+class Mol_Set(object):
+    """
+    A class for holding the information necessary to create a molecular
+    dataset. Run Mol_Set.generate() to generate input files across the set, 
+    and Mol_Set.run() to automatically go through the directories and run 
+    each input file. Check the respective fn docstrings to see extra 
+    capabilities.
+    """
+
+    def __init__(self,inp=None,info=None):
+    # {{{
+        """
+        Initialize the molecular dataset. 
+        inp is an input dict with '[molname]':'[geometry]' 
+        If None (default), empty Mol_Set initialized
+        info is a docstring about the dataset
+        """
+        #TODO: add an option for passing in a list of directories
+        if isinstance(inp,dict):
+#            self.geometries = list(inp.values())
+#            self.names = list(inp.keys())
+            self.geometries = copy.deepcopy(inp)
+            self.size = len(inp)
+            self.info = info
+            self.generated = False 
+            self.complete = False 
+            print("Molecule dataset generated from input dictionary.")
+        else: # initialize an empty database
+            self.geometries = list(inp.values())
+            self.names = list(inp.keys())
+            self.size = len(inp)
+            self.info = info
+            self.generated = False 
+            self.complete = False 
+            print("Empty molecule dataset generated. Please supply variables.")
+        self.dirlist = None # to be set with generator
+    # }}}
+
+    def save(self, loc=False):
+        pass
+
+    def generate(self, method, global_options=False, regen=False, **kwargs):
+        # {{{
+        '''
+        Generate the input files across a Mol_Set.
+        Require the method. 
+        Optional psi4.set_options dictionary.
+        Pass kwargs forward into the input file generation.
+        '''
+    
+        if not global_options:
+            global_options = {
+            'basis':'sto-3g',
+            'scf_type':'pk',
+            'mp2_type':'conv',
+            'freeze_core':'false',
+            'e_convergence':1e-8,
+            'd_convergence':1e-8}
+    
+        if 'directory' in kwargs:
+            bdir = kwargs['directory']
+        else:
+            bdir = '.'
+                
+        if (self.generated == True) and (regen == False):
+            dlist = [(bdir + '/{}'.format(name)) for name in list(self.geometries.keys())]
+            self.dirlist = dlist
+            print('Dataset input files already generated! Pass `regen=True` '
+                  'to regenerate.')
+            return dlist
+        
+        dlist = [] # list of directories
+        for n,g in self.geometries.items():
+            ndir = bdir + '/{}'.format(n)
+            dlist.append(ndir)
+            kwargs['directory'] = ndir
+            geom = copy.deepcopy(g) 
+            datahelper.write_psi4_input(geom,method,global_options,**kwargs)
+
+        self.dirlist = dlist
+        self.generated = True
+    
+        print('Dataset input files generated! Please run them using the given directory '
+              'list. Once complete, you may parse them with dataheler.grabber().')
+    
+        return dlist
+        # }}}
+
+    def run(self,infile='input.dat',outfile='output.dat',restart=False):
+        # {{{
+        '''
+        Run all jobs listed in self.dirlist (may be set manually or by Mol_Set.generate())
+        NOTE: This simply runs all jobs one-by-one. This is not recommended for large
+        datasets, as you are better served running the generated input files
+        in parallel. Use at your own risk!
+        '''
+        if self.dirlist == None:
+            print('Please pass a directory list into Mol_Set.dirlist or have it set '
+                  'by running Mol_Set.generate().')
+            return 0
+        elif (self.complete == True) and (restart == False):
+            print('Mol_Set jobs already complete! Pass `restart=True` to rerun.')
+            return 0
+        else:
+            datahelper.runner(self.dirlist,infile=infile,outfile=outfile)
+            self.complete = True
+            return 0
+        # }}}
 
 class PES(object):
     """

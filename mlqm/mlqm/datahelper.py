@@ -59,10 +59,39 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     if module_options:
         infile.write('psi4.set_module_options(\n{}\n)\n\n'.format(module_options))
     infile.write('{}\n\n'.format(call))
-    infile.write('with open("output.json","w") as dumpf:\n'
-                '   json.dump(wfn.variables(), dumpf, indent=4)\n\n')
     if extra:
         infile.write('{}'.format(extra))
+    infile.write('with open("output.json","w") as dumpf:\n'
+                '   json.dump(psi4.core.variables(), dumpf, indent=4)\n\n')
+    # }}}
+
+def harvest_xyz(dirlist,nlist=None):
+    # {{{
+    """
+    Pass in a list of directories and (optional) accompanying names
+    Return a name:geometry dictionary
+    Use filename (remove .extension) if no namelist given
+    """
+    xyz_dict = {}
+    if not nlist: # make a namelist from the directories
+        nlist = []
+        for d in dirlist:
+            nlist.append(d.split('.')[0]) # strip the extension
+    for d in range(0,len(dirlist)):
+        l = 1
+        geom = ""
+        with open(dirlist[d]) as xyzfile:
+            for line in xyzfile:
+                if l == 1: # number of atoms
+                    l += 1
+                    continue
+                if l == 2: # comment line
+                    l += 1
+                    continue
+                if l == 3: # xyz start
+                    geom += str(line) + "\n"
+        xyz_dict[nlist[d]] = geom
+    return xyz_dict
     # }}}
 
 def runner(dlist,infile='input.dat',outfile='output.dat'):
