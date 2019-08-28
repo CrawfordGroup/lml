@@ -45,6 +45,11 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     else:
         processors = False
 
+    if 'memory' in kwargs:
+        memory = kwargs['memory']
+    else:
+        memory = False
+
     if 'extra' in kwargs: 
         extra = kwargs['extra']
     else:
@@ -56,7 +61,9 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     infile.write('import psi4\n')
     infile.write('psi4.core.set_output_file("output.dat")\n\n')
     if processors:
-        infile.write('psi4.set_num_threads({})\n\n'.format(processors))
+        infile.write('psi4.set_num_threads({})\n'.format(processors))
+    if memory:
+        infile.write('psi4.set_memory({})\n'.format(memory))
     infile.write('mol = psi4.geometry("""\n{}\n""")\n\n'.format(molstr))
     infile.write('psi4.set_options(\n{}\n)\n\n'.format(global_options))
     if module_options:
