@@ -63,7 +63,7 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     if processors:
         infile.write('psi4.set_num_threads({})\n'.format(processors))
     if memory:
-        infile.write('psi4.set_memory({})\n'.format(memory))
+        infile.write('psi4.set_memory("{}")\n'.format(memory))
     infile.write('mol = psi4.geometry("""\n{}\n""")\n\n'.format(molstr))
     infile.write('psi4.set_options(\n{}\n)\n\n'.format(global_options))
     if module_options:
