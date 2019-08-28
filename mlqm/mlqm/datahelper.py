@@ -14,6 +14,9 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     alternative calls (ie properties) and extra commands as strings 
     Writes a PsiAPI python input file to directory/input.dat
     '''
+    if 'geomfunc' in kwargs:
+        molstr += '\n' + kwargs['geomfunc']
+
     if 'call' in kwargs:
         call = kwargs['call'] + '\n\n'
     else:
