@@ -8,3 +8,4 @@ from . import krr
 
 from .core import Dataset
 from .core import PES
+from .core import Mol_Set

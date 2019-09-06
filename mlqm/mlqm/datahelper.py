@@ -14,6 +14,9 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     alternative calls (ie properties) and extra commands as strings 
     Writes a PsiAPI python input file to directory/input.dat
     '''
+    if 'geomfunc' in kwargs:
+        molstr += '\n' + kwargs['geomfunc']
+
     if 'call' in kwargs:
         call = kwargs['call'] + '\n\n'
     else:
@@ -42,6 +45,11 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     else:
         processors = False
 
+    if 'memory' in kwargs:
+        memory = kwargs['memory']
+    else:
+        memory = False
+
     if 'extra' in kwargs: 
         extra = kwargs['extra']
     else:
@@ -53,16 +61,47 @@ def write_psi4_input(molstr,method,global_options,**kwargs):
     infile.write('import psi4\n')
     infile.write('psi4.core.set_output_file("output.dat")\n\n')
     if processors:
-        infile.write('psi4.set_num_threads({})\n\n'.format(processors))
+        infile.write('psi4.set_num_threads({})\n'.format(processors))
+    if memory:
+        infile.write('psi4.set_memory("{}")\n'.format(memory))
     infile.write('mol = psi4.geometry("""\n{}\n""")\n\n'.format(molstr))
     infile.write('psi4.set_options(\n{}\n)\n\n'.format(global_options))
     if module_options:
         infile.write('psi4.set_module_options(\n{}\n)\n\n'.format(module_options))
     infile.write('{}\n\n'.format(call))
-    infile.write('with open("output.json","w") as dumpf:\n'
-                '   json.dump(wfn.variables(), dumpf, indent=4)\n\n')
     if extra:
         infile.write('{}'.format(extra))
+    infile.write('with open("output.json","w") as dumpf:\n'
+                '   json.dump(psi4.core.variables(), dumpf, indent=4)\n\n')
+    # }}}
+
+def harvest_xyz(dirlist,nlist=None):
+    # {{{
+    """
+    Pass in a list of directories and (optional) accompanying names
+    Return a name:geometry dictionary
+    Use filename (remove .extension) if no namelist given
+    """
+    xyz_dict = {}
+    if not nlist: # make a namelist from the directories
+        nlist = []
+        for d in dirlist:
+            nlist.append(d.split('.')[0]) # strip the extension
+    for d in range(0,len(dirlist)):
+        l = 1
+        geom = ""
+        with open(dirlist[d]) as xyzfile:
+            for line in xyzfile:
+                if l == 1: # number of atoms
+                    l += 1
+                    continue
+                if l == 2: # comment line
+                    l += 1
+                    continue
+                if l == 3: # xyz start
+                    geom += str(line) + "\n"
+        xyz_dict[nlist[d]] = geom
+    return xyz_dict
     # }}}
 
 def runner(dlist,infile='input.dat',outfile='output.dat'):
