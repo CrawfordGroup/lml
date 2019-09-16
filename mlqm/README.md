@@ -1,3 +1,5 @@
 # MLQM: Machine-learning quantum mechanics
 
 This is where I store short or in-progress machine learning algorithms that pertain to quantum mechanics. Eventually, MLQM may get its own repository, or the codes housed within will get their own separate repositories. 
+
+Currently, kernel-ridge-regression of the CCSD or MP2 amplitudes to CCSD energies is implemented in `krr/krr.py`. Use with `python krr.py data.json` on a clean data file or, if necessary, a partially-filled data file will pick up where it left off. This code is meant to reproduce the [2019 paper](http://dx.doi.org/10.1021/acs.jpca.8b04455) by Margraf and Reuter. The given case is of diatomic hydrogen dissociation (Figure 2 of the paper); however, other diatomics can be easily studied by changing the atoms in the input JSON. See `krr/examples/` for more information. A clean example data file and a filled data file (along with the stored values in `.npy` format) are provided. Graphing modes include `interact` and `save`. Further work will include an interface for going beyond diatomic dissociation curves. 
