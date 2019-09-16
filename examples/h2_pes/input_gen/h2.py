@@ -27,7 +27,7 @@ dlist = pes.generate(opts,directory='./h2_pes',extra=extra_stuff)
 pes.save()
 
 # Run all input files on the PES
-pes.run()
+pes.run(progress=True)
 pes.save()
 
 # Pull results from output json and custom files in directory structure

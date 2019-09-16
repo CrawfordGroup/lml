@@ -1,0 +1,277 @@
+
+*** tstart() called on connor-LIFEBOOK-T937
+*** at Wed Sep 11 13:32:11 2019
+
+   => Loading Basis Set <=
+
+    Name: 6-311G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3 entry H          line    21 file /usr/share/psi4/basis/6-311g.gbs 
+    atoms 2    entry O          line   126 file /usr/share/psi4/basis/6-311g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.928603068517    -0.216256188761     1.007825032230
+         O            0.000000000000     0.000000000000     0.027252211792    15.994914619570
+         H            0.000000000000    -0.928603068517    -0.216256188761     1.007825032230
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =    158.81769  B =      9.69887  C =      9.14066 [cm^-1]
+  Rotational constants: A = 4761234.47572  B = 290764.80270  C = 274030.00805 [MHz]
+  Nuclear repulsion =    9.104552044101474
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-311G
+    Blend: 6-311G
+    Number of shells: 13
+    Number of basis function: 19
+    Number of Cartesian functions: 19
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        10      10       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         3       3       0       0       0       0
+     B2         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      19      19       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              13
+      Number of primitives:             26
+      Number of atomic orbitals:        19
+      Number of basis functions:        19
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 36290 doubles for integral storage.
+  We computed 4186 shell quartets total.
+  Whereas there are 4186 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 3.8084601084E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:   -75.46429528770371   -7.54643e+01   0.00000e+00 
+   @RHF iter   1:   -75.91149133462528   -4.47196e-01   3.72547e-02 DIIS
+   @RHF iter   2:   -75.96119465235401   -4.97033e-02   2.25115e-02 DIIS
+   @RHF iter   3:   -75.98357993937692   -2.23853e-02   1.39487e-03 DIIS
+   @RHF iter   4:   -75.98384857320497   -2.68634e-04   2.82358e-04 DIIS
+   @RHF iter   5:   -75.98386734874893   -1.87755e-05   7.34707e-05 DIIS
+   @RHF iter   6:   -75.98386885985357   -1.51110e-06   1.57937e-05 DIIS
+   @RHF iter   7:   -75.98386893098036   -7.11268e-08   2.69681e-06 DIIS
+   @RHF iter   8:   -75.98386893250310   -1.52274e-09   3.59252e-07 DIIS
+   @RHF iter   9:   -75.98386893251647   -1.33724e-11   4.37998e-08 DIIS
+   @RHF iter  10:   -75.98386893251683   -3.55271e-13   4.93512e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -20.512776     2A1    -1.309349     1B2    -0.762532  
+       3A1    -0.487456     1B1    -0.478795  
+
+    Virtual:                                                              
+
+       4A1     0.146240     2B2     0.211463     5A1     0.465667  
+       3B2     0.721597     2B1     1.016604     6A1     1.020808  
+       4B2     1.220702     7A1     1.430875     8A1     2.416467  
+       5B2     2.540966     3B1     5.333037     9A1     5.351429  
+       6B2     5.695787    10A1    51.462450  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  @RHF Final Energy:   -75.98386893251683
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1045520441014745
+    One-Electron Energy =                -123.0750267010730852
+    Two-Electron Energy =                  37.9866057244547832
+    Total Energy =                        -75.9838689325168275
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.4053
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.1537
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.5590     Total:     0.5590
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:    -1.4210     Total:     1.4210
+
+
+*** tstop() called on connor-LIFEBOOK-T937 at Wed Sep 11 13:32:11 2019
+Module time:
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              13
+      Number of SO shells:              10
+      Number of primitives:             26
+      Number of atomic orbitals:        19
+      Number of basis functions:        19
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  10    0    3    6 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 5317 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on connor-LIFEBOOK-T937
+*** at Wed Sep 11 13:32:11 2019
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                       MP2   
+              Program Written by Ugur Bozkaya,
+              Latest Revision June 25, 2014.
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	RMS orbital gradient is changed to :     1.00e-06
+	MAX orbital gradient is changed to :     1.00e-04
+	MO spaces per irreps... 
+
+	IRREP   FC    OCC   VIR  FV 
+	==============================
+	  A1     0     3     7    0
+	  A2     0     0     0    0
+	  B1     0     1     2    0
+	  B2     0     1     5    0
+	==============================
+
+	Memory is    524 MB 
+	Cost of iabc is      0 MB 
+	Cost of abcd is      0 MB 
+	Switching to the incore algorithm for iabc..
+	Switching to the incore algorithm for abcd..
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     9.10455204410147
+	SCF Energy (a.u.)                  :   -75.98386893251683
+	REF Energy (a.u.)                  :   -75.98386893251683
+	Alpha-Alpha Contribution (a.u.)    :    -0.01758416841782
+	Alpha-Beta Contribution (a.u.)     :    -0.11963988567392
+	Beta-Beta Contribution (a.u.)      :    -0.01758416841782
+	Scaled_SS Correlation Energy (a.u.):    -0.01172277894522
+	Scaled_OS Correlation Energy (a.u.):    -0.14356786280871
+	SCS-MP2 Total Energy (a.u.)        :   -76.13915957427076
+	SOS-MP2 Total Energy (a.u.)        :   -75.98386893251683
+	SCSN-MP2 Total Energy (a.u.)       :   -76.04576520534758
+	SCS-MP2-VDW Total Energy (a.u.)    :   -76.15459215459727
+	SOS-PI-MP2 Total Energy (a.u.)     :   -76.15136477246033
+	MP2 Correlation Energy (a.u.)      :    -0.15480822250957
+	MP2 Total Energy (a.u.)            :   -76.13867715502640
+	============================================================================== 
+
+*** tstop() called on connor-LIFEBOOK-T937 at Wed Sep 11 13:32:11 2019
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes

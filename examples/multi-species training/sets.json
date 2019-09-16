@@ -1,0 +1,14 @@
+{
+    "training":[
+        "n2.json",
+        "o2.json",
+        "co2.json",
+        "hf.json",
+        "naf.json"
+    ],
+    "validation": [
+        "co.json",
+        "hcl.json",
+        "lif.json"
+    ]
+}

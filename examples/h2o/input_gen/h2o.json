@@ -1,0 +1,15 @@
+{
+    "inpf": "h2o/input_gen/h2o.json",
+    "name": "h2o",
+    "geom": "H\nO 1 0.96\nH 2 0.96 1 x\nsymmetry c2v",
+    "method": "ccsd",
+    "pts": 50,
+    "gvar": "x",
+    "dis": [
+        "90",
+        "180"
+    ],
+    "basis": "6-311G",
+    "generated": true,
+    "complete": true
+}

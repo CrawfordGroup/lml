@@ -1,0 +1,15 @@
+{
+    "inpf": "co.json",
+    "name": "co",
+    "geom": "C\nO 1 x",
+    "method": "CCSD",
+    "pts": 200,
+    "gvar": "x",
+    "dis": [
+        0.5,
+        2.0
+    ],
+    "basis": "6-311G",
+    "generated": true,
+    "complete": true
+}

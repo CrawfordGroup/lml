@@ -1,0 +1,27 @@
+# This is a psi4 input file auto-generated for MLQM.
+import json
+import psi4
+psi4.core.set_output_file("output.dat")
+
+mol = psi4.geometry("""
+H
+N 1 1.0308
+N 2 1.24503 1 112.4912
+H 3 1.0308 2 112.4912 1 127.5
+""")
+
+psi4.set_options(
+{'basis': '6-311g', 'scf_type': 'pk', 'freeze_core': 'false', 'e_convergence': 1e-08, 'd_convergence': 1e-08}
+)
+
+e, wfn = psi4.energy("CCSD",return_wfn=True)
+
+
+wfn.to_file('wfn.npy')
+import mlqm
+import numpy as np
+mp2_amps = mlqm.datahelper.get_amps(wfn, 'MP2')
+np.save('mp2_amps.npy', mp2_amps['t2'])
+with open("output.json","w") as dumpf:
+   json.dump(psi4.core.variables(), dumpf, indent=4)
+

@@ -1,0 +1,260 @@
+
+*** tstart() called on connor-LIFEBOOK-T937
+*** at Wed Sep 11 10:11:35 2019
+
+   => Loading Basis Set <=
+
+    Name: 6-311G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry H          line    21 file /usr/share/psi4/basis/6-311g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000    -0.831632653061     1.007825032230
+         H            0.000000000000     0.000000000000     0.831632653061     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     12.09256  C =     12.09256 [cm^-1]
+  Rotational constants: A = ************  B = 362525.86417  C = 362525.86417 [MHz]
+  Nuclear repulsion =    0.318155623593006
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-311G
+    Blend: 6-311G
+    Number of shells: 6
+    Number of basis function: 6
+    Number of Cartesian functions: 6
+    Spherical Harmonics?: true
+    Max angular momentum: 0
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          6       6       0       0       0       0
+   -------------------------------------------------------
+    Total       6       6       1       1       1       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:               6
+      Number of primitives:             10
+      Number of atomic orbitals:         6
+      Number of basis functions:         6
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 462 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 7.7097487726E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:    -0.76008843055741   -7.60088e-01   0.00000e+00 
+   @RHF iter   1:    -0.97115037692431   -2.11062e-01   3.62085e-03 DIIS
+   @RHF iter   2:    -0.97185921814009   -7.08841e-04   8.24219e-04 DIIS
+   @RHF iter   3:    -0.97189813358849   -3.89154e-05   1.29035e-05 DIIS
+   @RHF iter   4:    -0.97189813683758   -3.24909e-09   2.68941e-07 DIIS
+   @RHF iter   5:    -0.97189813684156   -3.97726e-12   4.96285e-10 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A     -0.423359  
+
+    Virtual:                                                              
+
+       2A     -0.000556     3A      0.390367     4A      0.433280  
+       5A      2.437032     6A      2.614013  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     1 ]
+
+  @RHF Final Energy:    -0.97189813684156
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.3181556235930061
+    One-Electron Energy =                  -1.7333897998415160
+    Two-Electron Energy =                   0.4433360394069516
+    Total Energy =                         -0.9718981368415582
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+
+*** tstop() called on connor-LIFEBOOK-T937 at Wed Sep 11 10:11:35 2019
+Module time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   2
+      Number of AO shells:               6
+      Number of SO shells:               6
+      Number of primitives:             10
+      Number of atomic orbitals:         6
+      Number of basis functions:         6
+
+      Number of irreps:                  1
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 231 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on connor-LIFEBOOK-T937
+*** at Wed Sep 11 10:11:35 2019
+
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+                       MP2   
+              Program Written by Ugur Bozkaya,
+              Latest Revision June 25, 2014.
+
+ ============================================================================== 
+ ============================================================================== 
+ ============================================================================== 
+
+	RMS orbital gradient is changed to :     1.00e-06
+	MAX orbital gradient is changed to :     1.00e-04
+	MO spaces per irreps... 
+
+	IRREP   FC    OCC   VIR  FV 
+	==============================
+	   A     0     1     5    0
+	==============================
+
+	Memory is    524 MB 
+	Cost of iabc is      0 MB 
+	Cost of abcd is      0 MB 
+	Switching to the incore algorithm for iabc..
+	Switching to the incore algorithm for abcd..
+
+	Computing MP2 energy using SCF MOs (Canonical MP2)... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    :     0.31815562359301
+	SCF Energy (a.u.)                  :    -0.97189813684156
+	REF Energy (a.u.)                  :    -0.97189813684156
+	Alpha-Alpha Contribution (a.u.)    :     0.00000000000000
+	Alpha-Beta Contribution (a.u.)     :    -0.03421196927956
+	Beta-Beta Contribution (a.u.)      :     0.00000000000000
+	Scaled_SS Correlation Energy (a.u.):     0.00000000000000
+	Scaled_OS Correlation Energy (a.u.):    -0.04105436313548
+	SCS-MP2 Total Energy (a.u.)        :    -1.01295249997703
+	SOS-MP2 Total Energy (a.u.)        :    -1.01637369690499
+	SCSN-MP2 Total Energy (a.u.)       :    -0.97189813684156
+	SCS-MP2-VDW Total Energy (a.u.)    :    -1.01568945751940
+	SOS-PI-MP2 Total Energy (a.u.)     :    -1.01979489383295
+	MP2 Correlation Energy (a.u.)      :    -0.03421196927956
+	MP2 Total Energy (a.u.)            :    -1.00611010612112
+	============================================================================== 
+
+*** tstop() called on connor-LIFEBOOK-T937 at Wed Sep 11 10:11:35 2019
+Module time:
+	user time   =       0.00 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes

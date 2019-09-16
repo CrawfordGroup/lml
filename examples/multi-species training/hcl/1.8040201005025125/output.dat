@@ -1,0 +1,406 @@
+
+*** tstart() called on connor-LIFEBOOK-T937
+*** at Thu Sep 12 12:17:19 2019
+
+   => Loading Basis Set <=
+
+    Name: 6-311G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry H          line    21 file /usr/share/psi4/basis/6-311g.gbs 
+    atoms 2 entry CL         line   387 file /usr/share/psi4/basis/6-311g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         H            0.000000000000     0.000000000000    -1.753483565963     1.007825032230
+         CL           0.000000000000     0.000000000000     0.050536534540    34.968852682000
+
+  Running in c2v symmetry.
+
+  Rotational constants: A = ************  B =      5.28772  C =      5.28772 [cm^-1]
+  Rotational constants: A = ************  B = 158521.79674  C = 158521.79674 [MHz]
+  Nuclear repulsion =    4.986647642608942
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-311G
+    Blend: 6-311G
+    Number of shells: 14
+    Number of basis function: 24
+    Number of Cartesian functions: 24
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        14      14       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         5       5       0       0       0       0
+     B2         5       5       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              14
+      Number of primitives:             28
+      Number of atomic orbitals:        24
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 5562 shell quartets total.
+  Whereas there are 5565 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 2.8286151218E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:  -459.62761348153469   -4.59628e+02   0.00000e+00 
+   @RHF iter   1:  -459.95120490523169   -3.23591e-01   1.39782e-02 DIIS
+   @RHF iter   2:  -459.99241625513071   -4.12113e-02   8.20265e-03 DIIS
+   @RHF iter   3:  -459.99988668117436   -7.47043e-03   1.13401e-03 DIIS
+   @RHF iter   4:  -460.00028851315790   -4.01832e-04   2.06584e-04 DIIS
+   @RHF iter   5:  -460.00030564555112   -1.71324e-05   4.37476e-05 DIIS
+   @RHF iter   6:  -460.00030636024712   -7.14696e-07   4.25370e-06 DIIS
+   @RHF iter   7:  -460.00030636690349   -6.65636e-09   4.30050e-07 DIIS
+   @RHF iter   8:  -460.00030636693850   -3.50155e-11   3.96092e-08 DIIS
+   @RHF iter   9:  -460.00030636693856   -5.68434e-14   3.07904e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A1  -104.870163     2A1   -10.590385     3A1    -8.057964  
+       1B1    -8.055012     1B2    -8.055012     4A1    -1.071964  
+       5A1    -0.522379     2B2    -0.473135     2B1    -0.473135  
+
+    Virtual:                                                              
+
+       6A1    -0.012157     7A1     0.341165     3B1     0.419838  
+       3B2     0.419838     8A1     0.444087     9A1     0.876866  
+      10A1     2.405476     4B1     2.450971     4B2     2.450971  
+      11A1     2.512496    12A1    10.036844     5B1    26.196967  
+       5B2    26.196967    13A1    26.280719    14A1   218.830280  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     5,    0,    2,    2 ]
+
+  @RHF Final Energy:  -460.00030636693856
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              4.9866476426089417
+    One-Electron Energy =                -645.6356057374830471
+    Two-Electron Energy =                 180.6486517279355724
+    Total Energy =                       -460.0003063669386165
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -1.6901
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.8083
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.8818     Total:     0.8818
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:    -2.2413     Total:     2.2413
+
+
+*** tstop() called on connor-LIFEBOOK-T937 at Thu Sep 12 12:17:19 2019
+Module time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   2
+      Number of AO shells:              14
+      Number of SO shells:              14
+      Number of primitives:             28
+      Number of atomic orbitals:        24
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  14    0    5    5 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 10995 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on connor-LIFEBOOK-T937
+*** at Thu Sep 12 12:17:19 2019
+
+
+	Wfn Parameters:
+	--------------------
+	Wavefunction         = CCSD
+	Number of irreps     = 4
+	Number of MOs        = 24
+	Number of active MOs = 24
+	AO-Basis             = NONE
+	Semicanonical        = false
+	Reference            = RHF
+	Print Level          = 1
+
+	IRREP	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   14	    0	    5	    0	    9	    0
+	 A2	   0	    0	    0	    0	    0	    0
+	 B1	   5	    0	    2	    0	    3	    0
+	 B2	   5	    0	    2	    0	    3	    0
+	Transforming integrals...
+	IWL integrals will be deleted.
+	(OO|OO)...
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OO|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OO)...
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(OV|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OO)...
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|OV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	(VV|VV)...
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+	Frozen core energy     =      0.00000000000000
+
+	Size of irrep 0 of <ab|cd> integrals:      0.010 (MW) /      0.078 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.000 (MW) /      0.003 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.003 (MW) /      0.023 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.003 (MW) /      0.023 (MB)
+	Total:                                     0.016 (MW) /      0.128 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.006 (MW) /      0.045 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.000 (MW) /      0.002 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.002 (MW) /      0.014 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.002 (MW) /      0.014 (MB)
+	Total:                                     0.009 (MW) /      0.075 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.003 (MW) /      0.026 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.001 (MW) /      0.009 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.009 (MB)
+	Total:                                     0.006 (MW) /      0.045 (MB)
+
+	Nuclear Rep. energy          =      4.98664764260894
+	SCF energy                   =   -460.00030636693856
+	One-electron energy          =   -645.63560579275361
+	Two-electron energy          =    180.64865178320551
+	Reference energy             =   -460.00030636693913
+
+*** tstop() called on connor-LIFEBOOK-T937 at Thu Sep 12 12:17:20 2019
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+            **************************
+            *                        *
+            *        CCENERGY        *
+            *                        *
+            **************************
+
+    Nuclear Rep. energy (wfn)     =    4.986647642608942
+    SCF energy          (wfn)     = -460.000306366938560
+    Reference energy    (file100) = -460.000306366939128
+
+    Input parameters:
+    -----------------
+    Wave function   =     CCSD
+    Reference wfn   =     RHF
+    Brueckner       =     No
+    Memory (Mbytes) =     524.3
+    Maxiter         =     50
+    R_Convergence   =     1.0e-07
+    E_Convergence   =     1.0e-08
+    Restart         =     Yes
+    DIIS            =     Yes
+    AO Basis        =     NONE
+    ABCD            =     NEW
+    Cache Level     =     2
+    Cache Type      =     LOW
+    Print Level     =     1
+    Num. of threads =     1
+    # Amps to Print =     10
+    Print MP2 Amps? =     No
+    Analyze T2 Amps =     No
+    Print Pair Ener =     No
+    Local CC        =     No
+    SCS-MP2         =     False
+    SCSN-MP2        =     False
+    SCS-CCSD        =     False
+
+MP2 correlation energy -0.1157584584201325
+                Solving CC Amplitude Equations
+                ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------   --------
+     0        -0.115758458420132    0.000e+00    0.000000    0.000000    0.000000    0.147503
+     1        -0.124222182791789    5.593e-02    0.006427    0.022819    0.022819    0.190614
+     2        -0.131916860946614    2.760e-02    0.009288    0.034567    0.034567    0.232742
+     3        -0.132218367202258    5.212e-03    0.010067    0.038291    0.038291    0.238991
+     4        -0.132219757991113    1.429e-03    0.010054    0.038552    0.038552    0.240483
+     5        -0.132249530002676    2.342e-04    0.010071    0.038667    0.038667    0.240674
+     6        -0.132246299148613    5.719e-05    0.010073    0.038674    0.038674    0.240656
+     7        -0.132244369055083    1.103e-05    0.010073    0.038674    0.038674    0.240650
+     8        -0.132244692709289    2.629e-06    0.010074    0.038676    0.038676    0.240651
+     9        -0.132244690232330    4.680e-07    0.010074    0.038676    0.038676    0.240651
+    10        -0.132244701002450    1.092e-07    0.010074    0.038676    0.038676    0.240651
+    11        -0.132244700045043    1.969e-08    0.010074    0.038676    0.038676    0.240651
+    12        -0.132244700063892    5.943e-09    0.010074    0.038676    0.038676    0.240651
+
+    Iterations converged.
+
+
+    Largest TIA Amplitudes:
+              4   0         0.0295858798
+              4   1         0.0195550076
+              6   9        -0.0111787987
+              8  12        -0.0111787987
+              4   4         0.0100939545
+              4   3        -0.0083236267
+              3   0        -0.0076319926
+              4   2        -0.0057756127
+              6  10         0.0035560366
+              8  13         0.0035560366
+
+    Largest TIjAb Amplitudes:
+      4   4   0   0        -0.1975899039
+      4   4   0   1        -0.0690565529
+      4   4   1   0        -0.0690565529
+      4   4   0   2        -0.0380267093
+      4   4   2   0        -0.0380267093
+      4   4   1   1        -0.0369938002
+      6   6   9   9        -0.0356423383
+      8   8  12  12        -0.0356423383
+      6   8   9  12        -0.0247471023
+      8   6  12   9        -0.0247471023
+
+    SCF energy       (wfn)                    = -460.000306366938560
+    Reference energy (file100)                = -460.000306366939128
+
+    Opposite-spin MP2 correlation energy      =   -0.093014787358526
+    Same-spin MP2 correlation energy          =   -0.022743671061606
+    MP2 correlation energy                    =   -0.115758458420132
+      * MP2 total energy                      = -460.116064825359274
+
+    Opposite-spin CCSD correlation energy     =   -0.111695650790363
+    Same-spin CCSD correlation energy         =   -0.020549049273529
+    CCSD correlation energy                   =   -0.132244700063892
+      * CCSD total energy                     = -460.132551067003021
+

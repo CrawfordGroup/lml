@@ -1,0 +1,23 @@
+Training a ml on multiple species at once, then predicting properties of another.
+
+Train on
+N2
+O2
+CO2
+HF
+LiF
+
+Predict
+Training set
+CO
+HCl
+NaF
+
+Combination schemes:
+Monolithic data set: Pretty bad
+Average of individual machines, weighted with variance of errors:
+k-fold cross validation of the monolith:
+
+Other things to try:
+Use a classification algorithm to group similar species together, and then
+predict the group of new species and use an ml better suited for its group.
