@@ -16,30 +16,35 @@ def standard_error(actual, other) :
                range(len(other))) / len(other)
 
 if __name__ == "__main__" :
+    #Handle options
     parser = arpgarse.ArgumentParser()
     parser.add_argument("--plots", type=bool,
                         help=
                         "Whether to show the interactive plots when finished with processing.")
     args = parser.parse_args()
+
+    #Read the file containing set classification.
     fp = open("sets.json")
     inpf = json.load(fp)
     fp.close()
 
-    pes = {}
-    dlist = {}
-    results = {}
-    scf_E = {}
-    mp2_corr = {}
-    ccsd_corr = {}
-    mp2_reps = {}
-    t_avgs = {}
-    validators = {}
-    valid_reps = {}
-    valid_vals = {}
-    pebbles = {}
-    mp2_reps_all = []
-    ccsd_corr_all = []
+    #Define empty sets for the future.
+    pes = {}            #mlqm.PES's for each input.
+    dlist = {}          #Lists of directories for each input.
+    results = {}        #Results for each input.
+    scf_E = {}          #SCF energies for each input.
+    mp2_corr = {}       #MP2 Correlations for each input.
+    ccsd_corr = {}      #CCSD Correlations for each input.
+    mp2_reps = {}       #MP2 representations for each input.
+    t_avgs = {}         #Averages for each training input.
+    validators = {}     #Validators for each training input.
+    valid_reps = {}     #Validator representatives for each training input.
+    valid_vals = {}     #Validator values for each training input.
+    pebbles = {}        #Machines for each of the training inputs.
+    mp2_reps_all = []   #List of all the MP2 representations.
+    ccsd_corr_all = []  #List of all the CCSD correlation values.
 
+    #Extra commands for Psi4.
     extra_stuff = """
     wfn.to_file('wfn.npy')
     import mlqm
@@ -48,11 +53,13 @@ if __name__ == "__main__" :
     np.save('mp2_amps.npy', mp2_amps['t2'])
     """
 
-
+    #Read the training files.
     for f in inpf['training'] :
+        #Read the file.
         print(f"Running {f}", flush=True)
         pes[f] = mlqm.PES(f)
 
+        #If it has already been done, just read the values.
         if pes[f].complete and \
            all(os.path.isfile(d) for d in [f'pes/{pes[f].name}/{n}.npy'
                                            for n in ['scf_E', 'mp2_corr',
@@ -61,7 +68,7 @@ if __name__ == "__main__" :
             mp2_corr[f] = np.load(f'pes/{pes[f].name}/mp2_corr.npy')
             ccsd_corr[f] = np.load(f'pes/{pes[f].name}/ccsd_corr.npy')
             mp2_reps[f] = np.load(f'pes/{pes[f].name}/mp2_reps.npy')
-        else :   
+        else :  #Otherwise, generate the values.
             dlist[f] = pes[f].generate({'basis': pes[f].basis, 'scf_type': 'pk',
                                      'mp2_type': 'conv', 'freeze_core': 'false',
                                      'e_convergence':1e-8, 'd_convergence':1e-8},
@@ -76,6 +83,8 @@ if __name__ == "__main__" :
             mp2_corr[f] = list(results[f]['MP2 CORRELATION ENERGY'].values())
             ccsd_corr[f] = list(results[f]['CCSD CORRELATION ENERGY'].values())
 
+            #Make the MP2 representatives. TATR only because I can't get
+            #DTR to work.
             mp2_reps[f] = [mlqm.repgen.make_tatr('MP2', results[f]['mp2_amps.npy'][d])
                            for d in dlist[f]]
 
@@ -83,13 +92,15 @@ if __name__ == "__main__" :
             np.save(f'pes/{pes[f].name}/mp2_corr.npy', mp2_corr[f])
             np.save(f'pes/{pes[f].name}/ccsd_corr.npy', ccsd_corr[f])
             np.save(f'pes/{pes[f].name}/mp2_reps.npy', mp2_reps[f])
+        #Add the values to the massive data set.
         mp2_reps_all.extend(mp2_reps[f])
         ccsd_corr_all.extend(ccsd_corr[f])
-
+    #Read the validation files.
     for f in inpf['validation'] :
         print(f"Running {f}")
         pes[f] = mlqm.PES(f)
 
+        #If it has already been completed, just read the values.
         if pes[f].complete and \
            all(os.path.isfile(d) for d in [f'pes/{pes[f].name}/{n}.npy'
                                            for n in ['scf_E', 'mp2_corr',
@@ -98,7 +109,7 @@ if __name__ == "__main__" :
             mp2_corr[f] = np.load(f'pes/{pes[f].name}/mp2_corr.npy')
             ccsd_corr[f] = np.load(f'pes/{pes[f].name}/ccsd_corr.npy')
             mp2_reps[f] = np.load(f'pes/{pes[f].name}/mp2_reps.npy')
-        else :
+        else :  #Otherwise, generate the values.
             dlist[f] = pes[f].generate({'basis': pes[f].basis, 'scf_type': 'pk',
                                      'mp2_type': 'conv', 'freeze_core': 'false',
                                      'e_convergence':1e-8, 'd_convergence':1e-8},
@@ -122,6 +133,7 @@ if __name__ == "__main__" :
 
     #Train the monolith.
     ds = mlqm.Dataset(inpf = 'ml.json', reps=mp2_reps_all, vals = ccsd_corr_all)
+    #Make the validation set.
     validators_all = list(reversed(range(0, len(mp2_reps_all), 4)))
     valid_reps_all = [ds.grand['representations'][val] for val in validators_all]
     valid_vals_all = [ds.grand['values'][val] for val in validators_all]
@@ -138,6 +150,7 @@ if __name__ == "__main__" :
 
     #Train the pebbles.
     for f in inpf['training'] :
+        #Train the machine on its input.
         print(f"Reading ml_individ_{pes[f].name}.json")
         pebbles[f] = mlqm.Dataset(f"ml_individ_{pes[f].name}.json",
                                   reps = mp2_reps[f], vals = ccsd_corr[f])
@@ -160,7 +173,7 @@ if __name__ == "__main__" :
         pebbles[f].save()
 
     weight = {}
-    #Find the mean square residual.
+    #Find the mean square residuals.
     for f in inpf["training"] :
         total = 0
         num = 0
@@ -182,6 +195,7 @@ if __name__ == "__main__" :
                               np.zeros(len(reps))) / sum(1 / w for w in
                                                          list(weight.values()))
 
+    #Generate the images, and the plots if requested.
     n = 0
     for f in pes :
         pred_mp2 = mlqm.krr.predict(ds, mp2_reps[f])
@@ -194,6 +208,8 @@ if __name__ == "__main__" :
 
         pes_axis = np.linspace(pes[f].dis[0], pes[f].dis[1], pes[f].pts)
         #Make error bars for the combined data.
+        #These indicate the lowest predicted value to the
+        #highest predicted value.
         hold = {}
         for gf in pebbles :
             hold[gf] = np.subtract(
@@ -254,6 +270,8 @@ if __name__ == "__main__" :
 
             pes_axis = np.linspace(pes[f].dis[0], pes[f].dis[1], pes[f].pts)
             #Make error bars for the combined data.
+            #These indicate the lowest predicted value to the highest
+            #predicted value.
             hold = {}
             for gf in pebbles :
                 hold[gf] = np.subtract(
@@ -264,7 +282,7 @@ if __name__ == "__main__" :
             error = [[abs(diffs[i][-1]) for i in range(len(diffs))],
                      [abs(diffs[i][0]) for i in range(len(diffs))]]
     
-            plt.figure(n, dpi=200)
+            plt.figure(n)
             plt.plot(pes_axis, scf_E[f], 'y-', label = 'SCF PES')
             plt.plot(pes_axis, mp2_E, 'r--', label = 'MP2 PES')
             plt.plot(pes_axis, ccsd_E, 'b-', label = 'CCSD PES')
@@ -276,7 +294,7 @@ if __name__ == "__main__" :
             plt.legend()
             n += 1
         
-            plt.figure(n, dpi=200)
+            plt.figure(n)
             plt.plot(pes_axis, [0.002 for i in pes_axis], 'r-')
             plt.plot(pes_axis, [-0.002 for i in pes_axis], 'r-')
             plt.plot(pes_axis, [(pred_E[i] - ccsd_E[i])
