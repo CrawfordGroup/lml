@@ -1,15 +1,15 @@
 {
-    "inpf": "co2.json",
-    "name": "co2",
-    "geom": "C\nO 1 x\nO 1 x 2 180",
-    "method": "CCSD",
-    "pts": 200,
-    "gvar": "x",
-    "dis": [
-        0.5,
-        2.0
-    ],
-    "basis": "6-311G",
-    "generated": true,
-    "complete": true
+	"inpf": "co2.json",
+	"name": "co2",
+	"geom": "C\nO 1 x\nO 1 x 2 180",
+	"method": "CCSD",
+	"pts": 200,
+	"gvar": "x",
+	"dis": [
+		0.5,
+		2.0
+	],
+	"basis": "6-311G",
+	"generated": false,
+	"complete": false
 }

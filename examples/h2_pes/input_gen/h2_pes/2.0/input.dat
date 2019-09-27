@@ -4,8 +4,8 @@ import psi4
 psi4.core.set_output_file("output.dat")
 
 mol = psi4.geometry("""
-H
-H 1 2.0
+Br
+Br 1 2.0
 symmetry c1
 """)
 

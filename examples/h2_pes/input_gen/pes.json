@@ -1,15 +1,15 @@
 {
     "inpf": "pes.json",
     "name": "h2",
-    "geom": "H\nH 1 x\nsymmetry c1",
+    "geom": "Br\nBr 1 x\nsymmetry c1",
     "method": "MP2",
-    "pts": 50,
+    "pts": 200,
     "gvar": "x",
     "dis": [
         "0.5",
         "2.0"
     ],
-    "basis": "6-311G",
+    "basis": "STO-3G",
     "generated": true,
     "complete": true
 }

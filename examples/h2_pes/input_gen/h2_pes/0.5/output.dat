@@ -1,13 +1,13 @@
 
 *** tstart() called on connor-LIFEBOOK-T937
-*** at Wed Sep 11 10:11:00 2019
+*** at Tue Sep 17 14:44:54 2019
 
    => Loading Basis Set <=
 
     Name: 6-311G
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2 entry H          line    21 file /usr/share/psi4/basis/6-311g.gbs 
+    atoms 1-2 entry BR         line   759 file /usr/share/psi4/basis/6-311g.gbs 
 
 
          ---------------------------------------------------------
@@ -27,20 +27,20 @@
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-         H            0.000000000000     0.000000000000    -0.250000000000     1.007825032230
-         H            0.000000000000     0.000000000000     0.250000000000     1.007825032230
+         BR           0.000000000000     0.000000000000    -0.250000000000    78.918337600000
+         BR           0.000000000000     0.000000000000     0.250000000000    78.918337600000
 
   Running in c1 symmetry.
 
-  Rotational constants: A = ************  B =    133.81394  C =    133.81394 [cm^-1]
-  Rotational constants: A = ************  B = 4011640.85182  C = 4011640.85182 [MHz]
-  Nuclear repulsion =    1.058354421340000
+  Rotational constants: A = ************  B =      1.70887  C =      1.70887 [cm^-1]
+  Rotational constants: A = ************  B =  51230.57826  C =  51230.57826 [MHz]
+  Nuclear repulsion = 1296.484166141500054
 
   Charge       = 0
   Multiplicity = 1
-  Electrons    = 2
-  Nalpha       = 1
-  Nbeta        = 1
+  Electrons    = 70
+  Nalpha       = 35
+  Nbeta        = 35
 
   ==> Algorithm <==
 
@@ -57,20 +57,20 @@
 
   Basis Set: 6-311G
     Blend: 6-311G
-    Number of shells: 6
-    Number of basis function: 6
-    Number of Cartesian functions: 6
+    Number of shells: 34
+    Number of basis function: 78
+    Number of Cartesian functions: 82
     Spherical Harmonics?: true
-    Max angular momentum: 0
+    Max angular momentum: 2
 
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A          6       6       0       0       0       0
+     A         78      78       0       0       0       0
    -------------------------------------------------------
-    Total       6       6       1       1       1       0
+    Total      78      78      35      35      35       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
@@ -78,18 +78,18 @@
   Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   2
-      Number of AO shells:               6
-      Number of primitives:             10
-      Number of atomic orbitals:         6
-      Number of basis functions:         6
+      Number of AO shells:              34
+      Number of primitives:             66
+      Number of atomic orbitals:        82
+      Number of basis functions:        78
 
       Integral cutoff                 1.00e-12
       Number of threads:                 1
 
   Performing in-core PK
-  Using 462 doubles for integral storage.
-  We computed 231 shell quartets total.
-  Whereas there are 231 unique shell quartets.
+  Using 9495642 doubles for integral storage.
+  We computed 171310 shell quartets total.
+  Whereas there are 177310 unique shell quartets.
 
   ==> DiskJK: Disk-Based J/K Matrices <==
 
@@ -101,7 +101,7 @@
 
     OpenMP threads:              1
 
-  Minimum eigenvalue in the overlap matrix is 1.6531973109E-02.
+  Minimum eigenvalue in the overlap matrix is 1.7239429615E-04.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
@@ -110,13 +110,17 @@
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter SAD:    -0.71822840525652   -7.18228e-01   0.00000e+00 
-   @RHF iter   1:    -1.05633688038052   -3.38108e-01   9.12110e-03 DIIS
-   @RHF iter   2:    -1.05994103208636   -3.60415e-03   1.88272e-03 DIIS
-   @RHF iter   3:    -1.06010314714077   -1.62115e-04   1.32881e-04 DIIS
-   @RHF iter   4:    -1.06010364544512   -4.98304e-07   2.21822e-06 DIIS
-   @RHF iter   5:    -1.06010364563028   -1.85164e-10   1.53684e-08 DIIS
-   @RHF iter   6:    -1.06010364563029   -9.32587e-15   2.91029e-11 DIIS
+   @RHF iter SAD: -5152.59542411456096   -5.15260e+03   0.00000e+00 
+   @RHF iter   1: -5066.53751663184175    8.60579e+01   3.40175e-02 DIIS
+   @RHF iter   2: -5066.94748643483945   -4.09970e-01   8.67769e-03 DIIS
+   @RHF iter   3: -5066.97749717112856   -3.00107e-02   1.66089e-03 DIIS
+   @RHF iter   4: -5066.97967404841074   -2.17688e-03   2.50265e-04 DIIS
+   @RHF iter   5: -5066.97977094143516   -9.68930e-05   4.35141e-05 DIIS
+   @RHF iter   6: -5066.97977542647368   -4.48504e-06   6.21610e-06 DIIS
+   @RHF iter   7: -5066.97977575189725   -3.25424e-07   1.33993e-06 DIIS
+   @RHF iter   8: -5066.97977577085840   -1.89611e-08   1.53372e-07 DIIS
+   @RHF iter   9: -5066.97977577105121   -1.92813e-10   1.84278e-08 DIIS
+   @RHF iter  10: -5066.97977577105030    9.09495e-13   1.81692e-09 DIIS
   Energy and wave function converged.
 
 
@@ -127,25 +131,49 @@
 
     Doubly Occupied:                                                      
 
-       1A     -0.681928  
+       1A   -492.637553     2A   -492.637525     3A    -68.641397  
+       4A    -68.446113     5A    -61.679214     6A    -61.516052  
+       7A    -61.460700     8A    -61.459399     9A    -61.440022  
+      10A    -61.438726    11A    -19.666323    12A    -13.736127  
+      13A    -13.726060    14A    -11.059276    15A    -10.997279  
+      16A     -9.091617    17A     -9.082491    18A     -7.237521  
+      19A     -7.061285    20A     -7.061159    21A     -7.009794  
+      22A     -7.002406    23A     -6.790811    24A     -5.252840  
+      25A     -5.252827    26A     -3.693050    27A     -3.686736  
+      28A     -2.115320    29A     -1.795921    30A     -1.774530  
+      31A     -1.181602    32A     -0.524695    33A     -0.432900  
+      34A     -0.408944    35A     -0.104533  
 
     Virtual:                                                              
 
-       2A      0.199479     3A      0.287219     4A      0.766773  
-       5A      2.086812     6A      3.278384  
+      36A      0.094772    37A      0.170424    38A      0.183782  
+      39A      0.370704    40A      0.389944    41A      0.410317  
+      42A      0.695977    43A      0.742179    44A      0.899084  
+      45A      0.912161    46A      1.175059    47A      1.175143  
+      48A      1.713843    49A      1.826589    50A      1.857216  
+      51A      2.335801    52A      2.412120    53A      2.434627  
+      54A      2.711516    55A      2.759385    56A      2.759709  
+      57A      3.483740    58A      4.184398    59A      4.189650  
+      60A      4.205312    61A      4.657986    62A      6.039754  
+      63A      6.063507    64A      6.773180    65A      6.927626  
+      66A      6.950281    67A      7.580203    68A     11.471544  
+      69A     46.786568    70A     53.922821    71A    290.009199  
+      72A    290.714412    73A    290.714844    74A    292.098494  
+      75A    292.098936    76A    298.205053    77A   1026.732558  
+      78A   1035.567664  
 
     Final Occupation by Irrep:
               A 
-    DOCC [     1 ]
+    DOCC [    35 ]
 
-  @RHF Final Energy:    -1.06010364563029
+  @RHF Final Energy: -5066.97977577105030
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              1.0583544213400000
-    One-Electron Energy =                  -2.8730594350348135
-    Two-Electron Energy =                   0.7546013680645201
-    Total Energy =                         -1.0601036456302935
+    Nuclear Repulsion Energy =           1296.4841661415000544
+    One-Electron Energy =               -9432.7223811782678240
+    Two-Electron Energy =                3069.2584392657176977
+    Total Energy =                      -5066.9797757710493897
 
 Computation Completed
 
@@ -155,26 +183,26 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    -0.0000
-
-  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+
   Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on connor-LIFEBOOK-T937 at Wed Sep 11 10:11:00 2019
+*** tstop() called on connor-LIFEBOOK-T937 at Tue Sep 17 14:44:54 2019
 Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -182,26 +210,26 @@ Total time:
    Calculation information:
       Number of threads:                 1
       Number of atoms:                   2
-      Number of AO shells:               6
-      Number of SO shells:               6
-      Number of primitives:             10
-      Number of atomic orbitals:         6
-      Number of basis functions:         6
+      Number of AO shells:              34
+      Number of SO shells:              34
+      Number of primitives:             66
+      Number of atomic orbitals:        82
+      Number of basis functions:        78
 
       Number of irreps:                  1
       Integral cutoff                 0.00e+00
-      Number of functions per irrep: [   6 ]
+      Number of functions per irrep: [  78 ]
 
  OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 231 non-zero two-electron integrals.
+      Computed 1203269 non-zero two-electron integrals.
         Stored in file 33.
 
 
 *** tstart() called on connor-LIFEBOOK-T937
-*** at Wed Sep 11 10:11:00 2019
+*** at Tue Sep 17 14:44:55 2019
 
 
  ============================================================================== 
@@ -222,40 +250,40 @@ Total time:
 
 	IRREP   FC    OCC   VIR  FV 
 	==============================
-	   A     0     1     5    0
+	   A     0    35    43    0
 	==============================
 
 	Memory is    524 MB 
-	Cost of iabc is      0 MB 
-	Cost of abcd is      0 MB 
+	Cost of iabc is     16 MB 
+	Cost of abcd is     24 MB 
 	Switching to the incore algorithm for iabc..
 	Switching to the incore algorithm for abcd..
 
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    :     1.05835442134000
-	SCF Energy (a.u.)                  :    -1.06010364563029
-	REF Energy (a.u.)                  :    -1.06010364563029
-	Alpha-Alpha Contribution (a.u.)    :     0.00000000000000
-	Alpha-Beta Contribution (a.u.)     :    -0.01658533897335
-	Beta-Beta Contribution (a.u.)      :     0.00000000000000
-	Scaled_SS Correlation Energy (a.u.):     0.00000000000000
-	Scaled_OS Correlation Energy (a.u.):    -0.01990240676802
-	SCS-MP2 Total Energy (a.u.)        :    -1.08000605239832
-	SOS-MP2 Total Energy (a.u.)        :    -1.08166458629565
-	SCSN-MP2 Total Energy (a.u.)       :    -1.06010364563029
-	SCS-MP2-VDW Total Energy (a.u.)    :    -1.08133287951619
-	SOS-PI-MP2 Total Energy (a.u.)     :    -1.08332312019299
-	MP2 Correlation Energy (a.u.)      :    -0.01658533897335
-	MP2 Total Energy (a.u.)            :    -1.07668898460365
+	Nuclear Repulsion Energy (a.u.)    :  1296.48416614150005
+	SCF Energy (a.u.)                  : -5066.97977577105030
+	REF Energy (a.u.)                  : -5066.97977577105030
+	Alpha-Alpha Contribution (a.u.)    :    -0.11875674208561
+	Alpha-Beta Contribution (a.u.)     :    -0.50139615922579
+	Beta-Beta Contribution (a.u.)      :    -0.11875674208561
+	Scaled_SS Correlation Energy (a.u.):    -0.07917116139041
+	Scaled_OS Correlation Energy (a.u.):    -0.60167539107094
+	SCS-MP2 Total Energy (a.u.)        : -5067.66062232351214
+	SOS-MP2 Total Energy (a.u.)        : -5067.63159077804357
+	SCSN-MP2 Total Energy (a.u.)       : -5067.39779950319189
+	SCS-MP2-VDW Total Energy (a.u.)    : -5067.74031959694457
+	SOS-PI-MP2 Total Energy (a.u.)     : -5067.68173039396606
+	MP2 Correlation Energy (a.u.)      :    -0.73890964339700
+	MP2 Total Energy (a.u.)            : -5067.71868541444746
 	============================================================================== 
 
-*** tstop() called on connor-LIFEBOOK-T937 at Wed Sep 11 10:11:00 2019
+*** tstop() called on connor-LIFEBOOK-T937 at Tue Sep 17 14:44:56 2019
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       1.62 seconds =       0.03 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes

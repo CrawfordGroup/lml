@@ -104,17 +104,34 @@ def harvest_xyz(dirlist,nlist=None):
     return xyz_dict
     # }}}
 
-def runner(dlist,infile='input.dat',outfile='output.dat'):
+def runner(dlist,infile='input.dat',outfile='output.dat', **kwargs):
     # {{{
     '''
     Run every input in the directory list
     Default input and output files recommended
+    If the progress kwarg is true, print progress reports.
     '''
+    if ("progress" in kwargs) and (kwargs["progress"] == True) :
+        print("Running batch of inputs...")
+        print(f"[%50s] 0%%\r"%(''), end='')
+        s = 0
     wd = os.getcwd()
     for d in dlist:
         os.chdir(d)
-        subprocess.call(['psi4', infile, outfile]) 
+        if not os.path.isfile(infile) :
+            raise FileNotFoundError(
+                f"The file %s in the directory %s does not exist."%(
+                    infile, os.getcwd()))
+        subprocess.call(['psi4', os.getcwd() + "/" + infile, "-o " + outfile])
         os.chdir(wd)
+        if ("progress" in kwargs) and (kwargs["progress"] == True) :
+            s += 1
+            print(f"[%-50s] %d%%\r"%("".join('#' for i in
+                                            range(0,
+                                                  round(50 * s / len(dlist)))),
+                                     round(100 * s / len(dlist))), end = '')
+    if ("progress" in kwargs) and (kwargs["progress"] == True) :
+        print('')
     # }}}
 
 def grabber(dlist,fnames=False,varnames=False,outfile='output.json'):

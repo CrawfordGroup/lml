@@ -47,7 +47,7 @@ plt.plot(mp2_reps[25])
 plt.savefig('tatr.png')
 
 # Graph the PESs!
-pes = np.linspace(0.5,2.0,50)
+pes = np.linspace(0.5,2.0,200)
 plt.figure(1,dpi=200)
 plt.plot(pes,scf_E,'y-',label='SCF PES')
 plt.plot(pes,mp2_E,'r--',label='MP2 PES')

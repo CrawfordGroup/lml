@@ -45,13 +45,13 @@ for f in inpf['training'] :
     pes[f] = mlqm.PES(f)
 
     if pes[f].complete and \
-       all(os.path.isfile(d) for d in [f'{pes[f].name}/{n}.npy'
+       all(os.path.isfile(d) for d in [f'pes/{pes[f].name}/{n}.npy'
                                        for n in ['scf_E', 'mp2_corr',
                                                  'ccsd_corr', 'mp2_reps']]):
-        scf_E[f] = np.load(f'{pes[f].name}/scf_E.npy')
-        mp2_corr[f] = np.load(f'{pes[f].name}/mp2_corr.npy')
-        ccsd_corr[f] = np.load(f'{pes[f].name}/ccsd_corr.npy')
-        mp2_reps[f] = np.load(f'{pes[f].name}/mp2_reps.npy')
+        scf_E[f] = np.load(f'pes/{pes[f].name}/scf_E.npy')
+        mp2_corr[f] = np.load(f'pes/{pes[f].name}/mp2_corr.npy')
+        ccsd_corr[f] = np.load(f'pes/{pes[f].name}/ccsd_corr.npy')
+        mp2_reps[f] = np.load(f'pes/{pes[f].name}/mp2_reps.npy')
     else :   
         dlist[f] = pes[f].generate({'basis': pes[f].basis, 'scf_type': 'pk',
                                  'mp2_type': 'conv', 'freeze_core': 'false',
@@ -70,10 +70,10 @@ for f in inpf['training'] :
         mp2_reps[f] = [mlqm.repgen.make_tatr('MP2', results[f]['mp2_amps.npy'][d])
                        for d in dlist[f]]
 
-        np.save(f'{pes[f].name}/scf_E.npy', scf_E[f])
-        np.save(f'{pes[f].name}/mp2_corr.npy', mp2_corr[f])
-        np.save(f'{pes[f].name}/ccsd_corr.npy', ccsd_corr[f])
-        np.save(f'{pes[f].name}/mp2_reps.npy', mp2_reps[f])
+        np.save(f'pes/{pes[f].name}/scf_E.npy', scf_E[f])
+        np.save(f'pes/{pes[f].name}/mp2_corr.npy', mp2_corr[f])
+        np.save(f'pes/{pes[f].name}/ccsd_corr.npy', ccsd_corr[f])
+        np.save(f'pes/{pes[f].name}/mp2_reps.npy', mp2_reps[f])
     mp2_reps_all.extend(mp2_reps[f])
     ccsd_corr_all.extend(ccsd_corr[f])
 
@@ -82,13 +82,13 @@ for f in inpf['validation'] :
     pes[f] = mlqm.PES(f)
 
     if pes[f].complete and \
-       all(os.path.isfile(d) for d in [f'{pes[f].name}/{n}.npy'
+       all(os.path.isfile(d) for d in [f'pes/{pes[f].name}/{n}.npy'
                                        for n in ['scf_E', 'mp2_corr',
                                                  'ccsd_corr', 'mp2_reps']]):
-        scf_E[f] = np.load(f'{pes[f].name}/scf_E.npy')
-        mp2_corr[f] = np.load(f'{pes[f].name}/mp2_corr.npy')
-        ccsd_corr[f] = np.load(f'{pes[f].name}/ccsd_corr.npy')
-        mp2_reps[f] = np.load(f'{pes[f].name}/mp2_reps.npy')
+        scf_E[f] = np.load(f'pes/{pes[f].name}/scf_E.npy')
+        mp2_corr[f] = np.load(f'pes/{pes[f].name}/mp2_corr.npy')
+        ccsd_corr[f] = np.load(f'pes/{pes[f].name}/ccsd_corr.npy')
+        mp2_reps[f] = np.load(f'pes/{pes[f].name}/mp2_reps.npy')
     else :
         dlist[f] = pes[f].generate({'basis': pes[f].basis, 'scf_type': 'pk',
                                  'mp2_type': 'conv', 'freeze_core': 'false',
@@ -106,10 +106,10 @@ for f in inpf['validation'] :
 
         mp2_reps[f] = [mlqm.repgen.make_tatr('MP2', results[f]['mp2_amps.npy'][d])
                        for d in dlist[f]]
-        np.save(f'{pes[f].name}/scf_E.npy', scf_E[f])
-        np.save(f'{pes[f].name}/mp2_corr.npy', mp2_corr[f])
-        np.save(f'{pes[f].name}/ccsd_corr.npy', ccsd_corr[f])
-        np.save(f'{pes[f].name}/mp2_reps.npy', mp2_reps[f])
+        np.save(f'pes/{pes[f].name}/scf_E.npy', scf_E[f])
+        np.save(f'pes/{pes[f].name}/mp2_corr.npy', mp2_corr[f])
+        np.save(f'pes/{pes[f].name}/ccsd_corr.npy', ccsd_corr[f])
+        np.save(f'pes{pes[f].name}/mp2_reps.npy', mp2_reps[f])
 
 #Train the monolith.
 ds = mlqm.Dataset(inpf = 'ml.json', reps=mp2_reps_all, vals = ccsd_corr_all)
