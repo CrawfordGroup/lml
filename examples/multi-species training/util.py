@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import json
 import math
 
+#Just a few functions that may help in analyzing the data.
+
 def average(data) :
     """
     Find the average value of a data set.
