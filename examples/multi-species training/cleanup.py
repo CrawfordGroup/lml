@@ -1,6 +1,8 @@
 import os
 import json
 
+# Clean up the input files for a fresh run.
+
 if __name__ == "__main__" :
     filesfp = open("sets.json", "r")
     files = json.load(filesfp)
