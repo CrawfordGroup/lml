@@ -56,31 +56,33 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return np.asarray(tatr)
 # }}}
 
-def make_dtr(opdm,t2,x=150,st=0.05):
+def make_dtr(opdm,tpdm=None,x=150,st=0.05):
 # {{{
     """
     Making a DTR. Currently implemented for MP2 only.
-    Pass in the OPDM given by wfn.Da() plus any T2
-    amplitudes (as the TPDM is simply amplitudes)
+    Pass in the OPDM given by wfn.Da() plus optional TPDM 
     """
 
     # sort OPDM and t2 by magnitude (sorted(x,key=abs) will ignore sign) 
     # subbing in t2 for TPDM
     opdm = sorted(opdm.ravel(),key=abs)[-x:]
-    tpdm = sorted(t2.ravel(),key=abs)[-x:]
+    if tpdm:
+        tpdm = sorted(tpdm.ravel(),key=abs)[-x:]
 
     # make a discretized gaussian using the PDMs
     dtr = [] # store eq vals
     x_list = np.linspace(-1,1,x)
     for i in range(0,x):
         val1 = 0
-        val2 = 0
         for p_1 in range(0,len(opdm)):
             val1 += gaus(x_list[i],opdm[p_1],st)
-        for p_2 in range(0,len(tpdm)):
-            val2 += gaus(x_list[i],tpdm[p_2],st)
         dtr.append(val1)
-        dtr.append(val2)
+
+        if tpdm:
+            val2 = 0
+            for p_2 in range(0,len(tpdm)):
+                val2 += gaus(x_list[i],tpdm[p_2],st)
+            dtr.append(val2)
 
     return np.asarray(dtr)
 # }}}
