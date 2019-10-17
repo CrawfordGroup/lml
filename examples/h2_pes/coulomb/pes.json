@@ -1,6 +1,6 @@
 {
     "inpf": "pes.json",
-    "name": "h2",
+    "name": "pes",
     "geom": "O\nO 1 x\nsymmetry c1",
     "method": "HF",
     "pts": 100,

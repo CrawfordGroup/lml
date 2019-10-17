@@ -1,6 +1,6 @@
 {
     "setup": {
-        "name": "h2",
+        "name": "learn-coulomb",
         "valtype": "J",
         "predtype": "SCF",
         "M": 12,
