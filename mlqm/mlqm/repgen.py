@@ -56,18 +56,49 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return np.asarray(tatr)
 # }}}
 
-def make_dtr(opdm,tpdm=None,x=150,st=0.05):
+def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
 # {{{
     """
-    Making a DTR. Currently implemented for MP2 only.
-    Pass in the OPDM given by wfn.Da() plus optional TPDM 
+    Many-body tensor with density elements (density tensor representation). 
+    Currently tested for MP2 OPDM only.
+    Pass in the OPDM given by wfn.Da() plus optional TPDM.
+    x: discretization region along [-1:1] of the tensor (default 150)
+    st: width of gaussians summed along the tensor (default 0.05)
+    cut_type: type of cutoff of PDM elements after ravel and magnitude sort
+        'full': use all elements (ignore cut_val)
+        'max': use all elements above float(cut_val)
+        'top': use highest int(cut_val) elements
+        'percent': use highest float(cut_val)*100% elements
+        'percent_max': tuple(m,n) highest float(m)*100% elements with magnitude greater than float(n)
+    cut_val: value used in above cut_type (ignored if cut_type == 'full', type must match)
     """
 
     # sort OPDM and t2 by magnitude (sorted(x,key=abs) will ignore sign) 
-    # subbing in t2 for TPDM
-    opdm = sorted(opdm.ravel(),key=abs)[-x:]
+    opdm = sorted(opdm.ravel(),key=abs)
     if tpdm:
-        tpdm = sorted(tpdm.ravel(),key=abs)[-x:]
+        tpdm = sorted(tpdm.ravel(),key=abs)
+
+    # deal with cutoffs
+    if cut_type.lower() == 'full':
+        pass
+    elif cut_type.lower() == 'max':
+        opdm = opdm[abs[opdm] > cut_val]
+        if tpdm:
+            tpdm = tpdm[abs[tpdm] > cut_val]
+    elif cut_type.lower() == 'top':
+        opdm = opdm[-cut_val:]
+        if tpdm:
+            tpdm = tpdm[-cut_val:]
+    elif cut_type.lower() == 'percent':
+        opdm = opdm[-round(cut_val*len(opdm)):]
+        if tpdm:
+            tpdm = tpdm[-round(cut_val*len(tpdm)):]
+    elif cut_type.lower() == 'percent_max':
+        opdm = opdm[abs[opdm] > cut_val[1]]
+        opdm = opdm[-round(cut_val[0]*len(opdm)):]
+        if tpdm:
+            tpdm = tpdm[abs[tpdm] > cut_val[1]]
+            tpdm = tpdm[-round(cut_val[0]*len(tpdm)):]
 
     # make a discretized gaussian using the PDMs
     dtr = [] # store eq vals
