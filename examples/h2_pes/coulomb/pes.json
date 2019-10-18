@@ -1,15 +1,15 @@
 {
     "inpf": "pes.json",
     "name": "pes",
-    "geom": "O\nO 1 x\nsymmetry c1",
-    "method": "HF",
+    "geom": "H\nH 1 x\nsymmetry c1",
+    "method": "SCF",
     "pts": 100,
     "gvar": "x",
     "dis": [
         "0.5",
         "2.0"
     ],
-    "basis": "CC-PVDZ",
+    "basis": "CC-PVTZ",
     "generated": true,
     "complete": true
 }
