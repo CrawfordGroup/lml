@@ -103,16 +103,13 @@ def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
     # make a discretized gaussian using the PDMs
     dtr = [] # store eq vals
     x_list = np.linspace(-1,1,x)
-    for i in range(0,x):
-        val1 = 0
-        for p_1 in range(0,len(opdm)):
-            val1 += gaus(x_list[i],opdm[p_1],st)
-        dtr.append(val1)
 
+    # sum over d-centered gaussians for every x
+    for i in range(0,x):
+        val1 = sum([gaus(x_list[i],d,st) for d in opdm])
+        dtr.append(val1)
         if tpdm:
-            val2 = 0
-            for p_2 in range(0,len(tpdm)):
-                val2 += gaus(x_list[i],tpdm[p_2],st)
+            val2 = sum([gaus(x_list[i],d,st) for d in tpdm])
             dtr.append(val2)
 
     return np.asarray(dtr)
@@ -121,8 +118,7 @@ def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
 def gaus(x, u, s):
 # {{{
     '''
-    return a gaussian centered on u with width s
-    note: we're using x within [-1,1]
+    return a gaussian point x centered on u with width s
     '''
     return np.exp(-1 * (x-u)**2 / (2.0*s**2))
 # }}}
