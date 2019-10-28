@@ -56,31 +56,63 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
     return np.asarray(tatr)
 # }}}
 
-def make_dtr(opdm,t2,x=150,st=0.05):
+def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
 # {{{
     """
-    Making a DTR. Currently implemented for MP2 only.
-    Pass in the OPDM given by wfn.Da() plus any T2
-    amplitudes (as the TPDM is simply amplitudes)
+    Many-body tensor with density elements (density tensor representation). 
+    Currently tested for MP2 OPDM only.
+    Pass in the OPDM given by wfn.Da() plus optional TPDM.
+    x: discretization region along [-1:1] of the tensor (default 150)
+    st: width of gaussians summed along the tensor (default 0.05)
+    cut_type: type of cutoff of PDM elements after ravel and magnitude sort
+        'full': use all elements (ignore cut_val)
+        'min': use all elements above float(cut_val)
+        'top': use highest int(cut_val) elements
+        'percent': use highest float(cut_val)*100% elements
+        'percent_min': tuple(m,n) highest float(m)*100% elements with magnitude greater than float(n)
+    cut_val: value used in above cut_type (ignored if cut_type == 'full', type must match)
     """
 
     # sort OPDM and t2 by magnitude (sorted(x,key=abs) will ignore sign) 
-    # subbing in t2 for TPDM
-    opdm = sorted(opdm.ravel(),key=abs)[-x:]
-    tpdm = sorted(t2.ravel(),key=abs)[-x:]
+    opdm = np.array(sorted(opdm.ravel(),key=abs))
+    if tpdm:
+        tpdm = np.array(sorted(tpdm.ravel(),key=abs))
+
+    # deal with cutoffs
+    if cut_type.lower() == 'full':
+        pass
+    elif cut_type.lower() == 'min':
+        opdm = opdm[abs(opdm) > cut_val]
+        if tpdm:
+            tpdm = tpdm[abs(tpdm) > cut_val]
+    elif cut_type.lower() == 'top':
+        opdm = opdm[-cut_val:]
+        if tpdm:
+            tpdm = tpdm[-cut_val:]
+    elif cut_type.lower() == 'percent':
+        opdm = opdm[-round(cut_val*len(opdm)):]
+        if tpdm:
+            tpdm = tpdm[-round(cut_val*len(tpdm)):]
+    elif cut_type.lower() == 'percent_min':
+        opdm = opdm[abs(opdm) > cut_val[1]]
+        opdm = opdm[-round(cut_val[0]*len(opdm)):]
+        if tpdm:
+            tpdm = tpdm[abs(tpdm) > cut_val[1]]
+            tpdm = tpdm[-round(cut_val[0]*len(tpdm)):]
+    else:
+        raise RuntimeError("Cutoff type '{}' not recognized.".format(cut_type))
 
     # make a discretized gaussian using the PDMs
     dtr = [] # store eq vals
     x_list = np.linspace(-1,1,x)
+
+    # sum over d-centered gaussians for every x
     for i in range(0,x):
-        val1 = 0
-        val2 = 0
-        for p_1 in range(0,len(opdm)):
-            val1 += gaus(x_list[i],opdm[p_1],st)
-        for p_2 in range(0,len(tpdm)):
-            val2 += gaus(x_list[i],tpdm[p_2],st)
+        val1 = sum([gaus(x_list[i],d,st) for d in opdm])
         dtr.append(val1)
-        dtr.append(val2)
+        if tpdm:
+            val2 = sum([gaus(x_list[i],d,st) for d in tpdm])
+            dtr.append(val2)
 
     return np.asarray(dtr)
 # }}}
@@ -88,8 +120,7 @@ def make_dtr(opdm,t2,x=150,st=0.05):
 def gaus(x, u, s):
 # {{{
     '''
-    return a gaussian centered on u with width s
-    note: we're using x within [-1,1]
+    return a gaussian point x centered on u with width s
     '''
     return np.exp(-1 * (x-u)**2 / (2.0*s**2))
 # }}}
