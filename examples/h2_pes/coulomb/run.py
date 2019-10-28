@@ -6,15 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
-#Return the biggest n values in a matrix.
-def biggest_values(mat, n) :
-    line = []
-    for r in mat :
-        line.extend(r)
-    if len(line) < n :
-        line.extend(0 for i in range(len(line) - n))
-    return sorted(line, reverse = True)[:n]
-
 def main(**kwargs) :
     pes = mlqm.PES("pes.json")
     opts = {"basis": pes.basis, "scf_type": "pk", "e_convergence": 1e-8,
@@ -22,9 +13,8 @@ def main(**kwargs) :
     extras = """
 wfn.to_file('wfn.npy')
 import numpy as np
-mol = wfn.molecule()
-coulomb = np.array([[(mol.fZ(i) ** 2.4 / 2 if i == j else (mol.fZ(i) * mol.fZ(j)) / np.linalg.norm([mol.fx(i) - mol.fx(j), mol.fy(i) - mol.fy(j), mol.fz(i) - mol.fz(j)])) for j in range(mol.natom())] for i in range(mol.natom())])
-np.save('j.npy', coulomb)
+np.save("geom.npy", mol.geometry().to_array())
+np.save("charges.npy", np.array([mol.fZ(i) for i in range(mol.natom())]))
 """
 
     dlist = pes.generate(opts, directory = "./pes", extra = extras,
@@ -33,13 +23,17 @@ np.save('j.npy', coulomb)
     pes.save()
     pes.run(progress = True, restart = kwargs["regen"])
     pes.save()
-    results = mlqm.datahelper.grabber(dlist, varnames = ["SCF TOTAL ENERGY"],
-                                      fnames = ["j.npy"])
+    results = mlqm.datahelper.grabber(dlist, varnames = ["SCF TOTAL ENERGY",
+                                                         "CCSD CORRELATION ENERGY"],
+                                      fnames = ["geom.npy", "charges.npy"])
     scf_E = [E for E in list(results['SCF TOTAL ENERGY'].values())]
-    mats = [m for m in list(results["j.npy"].values())]
-    reps = [biggest_values(mat, 10) for mat in mats]
+    ccsd_corr = [E for E in list(results['CCSD CORRELATION ENERGY'].values())]
+    ccsd_E = np.add(scf_E, ccsd_corr)
+    geoms = [m for m in list(results["geom.npy"].values())]
+    charges = [m for m in list(results["charges.npy"].values())]
+    reps = mlqm.repgen.make_coulomb(geoms, charges)
 
-    ds = mlqm.Dataset(inpf = "ml.json", reps = reps, vals = scf_E)
+    ds = mlqm.Dataset(inpf = "ml.json", reps = reps, vals = ccsd_corr)
 
     if "regen" in kwargs and kwargs["regen"] :
         ds.data['trainers'] = False
@@ -59,8 +53,9 @@ np.save('j.npy', coulomb)
 
     ds, t_AVG = ds.train("KRR")
     ds.save()
-    pred_E = mlqm.krr.predict(ds, valid_reps)
-    pred_E = np.add(pred_E, t_AVG)
+    pred_corr = mlqm.krr.predict(ds, valid_reps)
+    pred_E = np.add(pred_corr, t_AVG)
+    pred_E = np.add(pred_E, [scf_E[i] for i in validators])
 
     pes_x = np.linspace(float(pes.dis[0]), float(pes.dis[1]), int(pes.pts))
     v_pes = [pes_x[i] for i in validators]
@@ -75,7 +70,8 @@ np.save('j.npy', coulomb)
     else :
         plt.title("PES Predicted from the Coulomb Matrix")
         
-    plt.plot(pes_x, scf_E, 'y-o', label = "SCF PES")
+    plt.plot(pes_x, scf_E, 'y-', label = "SCF PES")
+    plt.plot(pes_x, ccsd_E, 'b-', label = "CCSD PES")
     plt.plot(v_pes, pred_E, 'r-^', label = "J PES")
     plt.plot(t_pes, [min(min(scf_E), min(pred_E)) * 1.1 for i in range(len(t_pes))],
              "go", label = "Training Points")
@@ -86,7 +82,7 @@ np.save('j.npy', coulomb)
     plt.xlabel("Bond length (Å)")
     plt.ylabel("Difference in Predicted Energy (Hartree)")
     plt.title("Learning Error")
-    plt.plot(v_pes, np.subtract([scf_E[i] for i in validators], pred_E), "bo",
+    plt.plot(v_pes, np.subtract([ccsd_E[i] for i in validators], pred_E), "bo",
              label = "Absolute Errors")
     plt.plot(pes_x, [0.002 for i in pes_x], "r-")
     plt.plot(pes_x, [-0.002 for i in pes_x], "r-")

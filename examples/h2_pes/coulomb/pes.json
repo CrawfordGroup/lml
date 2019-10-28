@@ -2,7 +2,7 @@
     "inpf": "pes.json",
     "name": "pes",
     "geom": "H\nH 1 x\nsymmetry c1",
-    "method": "SCF",
+    "method": "CCSD",
     "pts": 100,
     "gvar": "x",
     "dis": [
@@ -11,5 +11,6 @@
     ],
     "basis": "CC-PVTZ",
     "generated": true,
-    "complete": true
+    "complete": true,
+    "opts": false
 }
