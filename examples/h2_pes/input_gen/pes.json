@@ -3,13 +3,13 @@
     "name": "h2",
     "geom": "H\nH 1 x\nsymmetry c1",
     "method": "MP2",
-    "pts": 200,
+    "pts": 50,
     "gvar": "x",
     "dis": [
         "0.5",
         "2.0"
     ],
-    "basis": "STO-3G",
+    "basis": "6-311g",
     "generated": false,
     "complete": false
 }

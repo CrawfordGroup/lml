@@ -3,12 +3,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-opts = {'basis':'6-311g',
-        'scf_type':'pk',
-        'mp2_type':'conv',
-        'freeze_core':'false',
-        'e_convergence':1e-8,
-        'd_convergence':1e-8}
+
 
 # Let's write the wfn and the MP2 amplitudes to file for later!
 extra_stuff = """
@@ -21,6 +16,13 @@ np.save('mp2_amps.npy',mp2_amps['t2'])
 
 # Build PES object with settings
 pes = mlqm.PES('pes.json')
+
+opts = {'basis':pes.basis,
+        'scf_type':'pk',
+        'mp2_type':'conv',
+        'freeze_core':'false',
+        'e_convergence':1e-8,
+        'd_convergence':1e-8}
 
 # Generate input files and hold directory structure
 dlist = pes.generate(opts,directory='./h2_pes',extra=extra_stuff)

@@ -1,0 +1,15 @@
+{
+    "inpf": "example.json",
+    "name": "h2",
+    "geom": "H\nF 1 x",
+    "method": "MP2",
+    "pts": 50,
+    "gvar": "x",
+    "dis": [
+        0.5,
+        2.0
+    ],
+    "basis": "6-311g",
+    "generated": true,
+    "complete": true
+}
