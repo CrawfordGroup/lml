@@ -7,13 +7,37 @@ import numpy as np
 import psi4
 
 """
+molsets
+
 This module contains some molecule set builders for sets commonly used in this
 package.
+
+Contributor: Connor Briggs
+
+Classes
+-------
+PESBuilder
+    Builds a PES based on a geometry with variables.
 """
 
 class PESBuilder(base.MolsetBuilder) :
     """
+    PESBuilder
+    
     Creates a set of geometries based on varying a parameter.
+
+    Contributor: Connor Briggs
+
+    Methods
+    -------
+    __init__(self)
+        Default constructor.
+
+    getsingleton()
+        See base.Singleton.getsingleton
+
+    build(self, inp, **kwargs)
+        Builds the set of molecules.
     """
 
     singleton = None
@@ -21,34 +45,72 @@ class PESBuilder(base.MolsetBuilder) :
     def __init__(self) :
         pass
 
-    def getsingleton() :
-        """
-        Implementation of getsingleton.
-        """
-        if PESBuilder.singleton == None :
-            PESBuilder.singleton = PESBuilder()
-        return PESBuilder.singleton
-
     def build(self, inp, **kwargs) :
         """
-        Builds the PES set. Can take either a dictionary or a json file name.
+        PESBuilder.build
+
+        Builds the PES set.
+
+        Contributor: Connor Briggs
+
+        Parameters
+        ----------
+        inp
+            The dictionary that specifies the PES. It should contain the fields
+            "geom" specifying the geometry in Psi4 notation, "gvar" which
+            holds either a single string or a list of strings representing the
+            variables in the geometry, "dis" which holds either a list
+            containing two numbers, or a list that contains lists of two numbers
+            which specifies the ranges to vary the variables over, and "pts"
+            which contains either a number or a list of numbers representing
+            the number of points to split the ranges into. If only one dis or
+            pts is specified for several gvars, then these will be duplicated
+            to match the number of gvars.
+
+        pestype
+            Either "include" or "exclude", defaults to "include", indicating
+            whether the ranges include the bounds or not. Case insensitive.
+
+        Raises
+        ------
+        TypeError
+            If inp is not a dictionary.
+
+        ValueError
+            If pestype is passed, but is not "include" or "exclude"
+
+        KeyError
+            If one of the fields is missing from inp.
+
+        StopIteration
+            When the iteration has been reached.
+
+        Yields
+        ------
+        Molecule
+            A molecule with some geometry in the specified PES.
 
         Returns
         -------
         generator
-            A generator expression that can be iterated over.
+            A generator expression that yields the molecules in the PES. Do
+            not assume order.
+        
         """
         
-        # Read the input file or dictionary.
+        # Read the input dictionary.
         if type(inp) is dict :
             dic = inp
         else :
-            raise Exception
+            raise TypeError
         
         geom = dic['geom']
-        gvars = dic['gvar'] if hasattr(dic['gvar'], "__iter__") else [dic['gvar']]
-        dises = dic['dis'] if hasattr(dic['dis'][0], "__iter__") else [dic['dis']]
-        pts = dic['pts'] if hasattr(dic['pts'], "__iter__") else [dic['pts']]
+        gvars = dic['gvar'] if hasattr(dic['gvar'], "__iter__") else \
+                [dic['gvar']]
+        dises = dic['dis'] if hasattr(dic['dis'][0], "__iter__") else \
+                [dic['dis'] for i in range(len(gvars))]
+        pts = dic['pts'] if hasattr(dic['pts'], "__iter__") else \
+              [dic['pts'] for i in range(len(gvars))]
 
         # Generate the ranges.
         peses = [[] for i in range(len(gvars))]
@@ -63,7 +125,7 @@ class PESBuilder(base.MolsetBuilder) :
                 peses[i].pop(0)
                 peses[i].pop(-1)
             else :
-                raise Exception
+                raise ValueError
 
         # Generate the geometries.
         index = [0 for i in range(len(peses))]
@@ -94,5 +156,6 @@ class PESBuilder(base.MolsetBuilder) :
                 if index[i] >= pts[i] :
                     index[i] = 0
                     index[i + 1] += 1
-        return
-            
+
+        # Stop the generator.
+        raise StopIteration

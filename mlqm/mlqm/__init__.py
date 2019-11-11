@@ -11,7 +11,11 @@ from . import molecule
 from . import molsets
 from . import inputgen
 from . import runners
+from . import output
 
 from .core import Dataset
 from .core import PES
 from .core import Mol_Set
+
+# Since everyone seems to put one of these in their code, we probably should too.
+__version__ = "version"

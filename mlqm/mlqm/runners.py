@@ -3,50 +3,92 @@
 import psi4
 import numpy as np
 from . import base
+from . import output
 import concurrent.futures
 import os
 import subprocess
 
+"""
+runners
+
+Contains various adapters to different QC programs.
+
+Contributor: Connor Briggs
+
+Classes
+-------
+Psi4Runner
+    Runs using Psi4.
+"""
+
 class Psi4Runner(base.Runner) :
-    __singleton = None
+    """
+    Psi4Runner
+
+    Runs an input file using Psi4.
+
+    Contributor: Connor Briggs
+
+    Methods
+    -------
+    __init__(self)
+        Default constructor.
+
+    getsingleton()
+        See base.Singleton.getsingleton
+
+    run_item(self, directory, inpf, outpf, **kwargs)
+        Runs an input file through Psi4.
+
+    run
+        Inherited from super.
+    """
 
     def __init__(self) :
         pass
 
-    def getsingleton() :
-        if Psi4Runner.__singleton is None :
-            Psi4Runner.__singleton = Psi4Runner()
-        return Psi4Runner.__singleton
-
-    def __run_item(directory, inpf, outpf, **kwargs) :
-        if os.path.isfile(directory + "/" + outpf) and ("regen" not in kwargs
-                                                        or not kwargs['regen']):
-            return
-        subprocess.call(['psi4', directory + '/' + inpf,
-                         '-o' + directory + "/" +  outpf])
-        
-    def run(self, directories, inpf = "input.dat", outpf= "output.dat",
-            executor = None, **kwargs) :
+    def run_item(self, inpf, outpf, **kwargs) :
         """
-        This method runs a series of files through Psi4. The optional
-        parameter 'executor' represents a concurrent.futures.Executor
-        object to use to add concurrency to this. If None, then
-        the program will execute sequentially.
+        Psi4Runner.run_item
 
-        Returns
-        -------
-        void
+        Runs a single input file through Psi4.
+
+        Contributor: Connor Briggs
+
+        Parameters
+        ----------
+        inpf
+            The name of the input file
+
+        outpf
+            The name of the output file
+
+        mediator
+            Reference to the OutputMediator, if given.
         """
-        if executor is None :
-            wd = os.getcwd()
-            for d in directories :
-                if os.path.isfile(outpf) and ("regen" not in kwargs or
-                                              not kwargs['regen']):
-                    continue
-                subprocess.call(['psi4', d + "/" + inpf, "-o" +
-                                 d + "/" + outpf])
-        else :
-            futures = [executor.submit(Psi4Runner.__run_item, d, inpf, outpf,
-                                                    **kwargs) for d in
-                                    directories]
-            concurrent.futures.wait(futures)
+        subprocess.call(['psi4', inpf])
+        # Command the progress bar to increment.
+        if "mediator" in kwargs :
+            kwargs["mediator"].submit(output.ProgressBarCommand("inc"))
+            kwargs["mediator"].submit(output.ProgressBarCommand("write"))
+
+    def run(self, directories, inpf = "input.dat", outpf = "output.dat",
+            executor = None, *args, **kwargs) :
+        """
+        Psi4Runner.run
+
+        Overridden here to add default values for inpf and outpf,
+        as well as for a progress bar.
+
+        Contributor: Connor Briggs
+
+        Paramters
+        ---------
+        See Runner.run
+
+        See Also
+        --------
+        base.Runner.run
+        """
+        super().run(directories, inpf, outpf, executor = executor,
+                    *args, **kwargs)
