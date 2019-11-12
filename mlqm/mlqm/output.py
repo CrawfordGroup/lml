@@ -49,9 +49,6 @@ class OutputMediator(base.Singleton) :
 
     Fields
     ------
-    __progress_bar
-        A progress bar.
-
     __queue
         Commands that have been queued.
 
@@ -407,7 +404,7 @@ class EndMediatorCommand :
     """
     pass
 
-class Outputter(Observer) :
+class Outputter(Observer, base.Singleton) :
     """
     Outputter
 
@@ -432,7 +429,6 @@ class Outputter(Observer) :
     getsingleton()
         See base.DatasetBuilder.getsingleton
     """
-    __singleton = None
     
     def __init__(self) :
         pass
@@ -440,10 +436,6 @@ class Outputter(Observer) :
     def process(self, command) :
         print(str(command), flush = True)
 
-    def getsingleton() :
-        if Outputter.__singleton == None :
-            Outputter.__singleton = Outputter()
-        return Outputter.__singleton
 
 class OutputCommand :
     """
