@@ -40,7 +40,7 @@ mp2_E = np.add(mp2_corr,scf_E)
 ccsd_E = np.add(ccsd_corr,scf_E)
 
 # Graph the PESs!
-pes = np.linspace(0.5,2.0,200)
+pes = np.linspace(pes.dis[0], pes.dis[1], pes.pts)
 v_pes = [pes[i] for i in validators]
 noval_pes = np.delete(pes,validators,axis=0)
 t_pes = [noval_pes[i] for i in ds.data['trainers']]

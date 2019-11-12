@@ -97,7 +97,7 @@ class Mol_Set(object):
         return dlist
         # }}}
 
-    def run(self,infile='input.dat',outfile='output.dat',restart=False):
+    def run(self,infile='input.dat',outfile='output.dat',restart=False, **kwargs):
         # {{{
         '''
         Run all jobs listed in self.dirlist (may be set manually or by Mol_Set.generate())
@@ -113,7 +113,7 @@ class Mol_Set(object):
             print('Mol_Set jobs already complete! Pass `restart=True` to rerun.')
             return 0
         else:
-            datahelper.runner(self.dirlist,infile=infile,outfile=outfile)
+            datahelper.runner(self.dirlist,infile=infile,outfile=outfile, **kwargs)
             self.complete = True
             return 0
         # }}}
