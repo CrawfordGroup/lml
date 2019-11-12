@@ -97,7 +97,7 @@ class Mol_Set(object):
         return dlist
         # }}}
 
-    def run(self,infile='input.dat',outfile='output.dat',restart=False):
+    def run(self,infile='input.dat',outfile='output.dat',restart=False, **kwargs):
         # {{{
         '''
         Run all jobs listed in self.dirlist (may be set manually or by Mol_Set.generate())
@@ -113,7 +113,7 @@ class Mol_Set(object):
             print('Mol_Set jobs already complete! Pass `restart=True` to rerun.')
             return 0
         else:
-            datahelper.runner(self.dirlist,infile=infile,outfile=outfile)
+            datahelper.runner(self.dirlist,infile=infile,outfile=outfile, **kwargs)
             self.complete = True
             return 0
         # }}}
@@ -268,7 +268,7 @@ class PES(object):
         return dlist
         # }}}
 
-    def run(self,infile='input.dat',outfile='output.dat',restart=False):
+    def run(self,infile='input.dat',outfile='output.dat',restart=False, **kwargs):
         # {{{
         '''
         Run all jobs listed in self.dirlist (may be set manually or by PES.generate())
@@ -284,7 +284,7 @@ class PES(object):
             print('PES jobs already complete! Pass `restart=True` to rerun.')
             return 0
         else:
-            datahelper.runner(self.dirlist,infile=infile,outfile=outfile)
+            datahelper.runner(self.dirlist,infile=infile,outfile=outfile, **kwargs)
             self.complete = True
             return 0
         # }}}
@@ -496,7 +496,7 @@ class Dataset(object):
             # NOTE: while my input file uses "s" and "l", skl treats these
             # as "gamma" and "alpha" where gamma = 1/(2*s**2) and alpha = l
             # TODO: Depending on the kernel, s/gamma may not be necessary
-            if self.data['hypers']:
+            if 'hypers' in self.data and self.data['hypers']:
                 print("Loading hyperparameters from Dataset.")
                 gamma = 1.0 / 2.0 / self.data['s']**2 
                 alpha = self.data['l'] 
@@ -518,7 +518,7 @@ class Dataset(object):
         
             # train for a(lpha) = regression coefficients
             # NOTE: I call the coeffs "a" while skl uses "dual_coef"
-            if self.data['a']:
+            if ('a' in self.data) and self.data['a']:
                 print("Loading coefficients from Dataset.")
                 alpha = np.asarray(self.data['a'])
                 krr.dual_coef_ = alpha

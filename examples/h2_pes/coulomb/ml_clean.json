@@ -1,10 +1,10 @@
 {
     "setup": {
-        "name": "h2",
-        "valtype": "CCSD",
-        "predtype": "MP2",
+        "name": "learn-coulomb",
+        "valtype": "J",
+        "predtype": "SCF",
         "M": 12,
-        "N": 200,
+        "N": 100,
         "st": 0.05,
         "K": 30
     },

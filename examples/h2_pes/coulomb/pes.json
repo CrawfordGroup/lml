@@ -1,0 +1,16 @@
+{
+    "inpf": "pes.json",
+    "name": "pes",
+    "geom": "H\nH 1 x\nsymmetry c1",
+    "method": "CCSD",
+    "pts": 100,
+    "gvar": "x",
+    "dis": [
+        "0.5",
+        "2.0"
+    ],
+    "basis": "CC-PVTZ",
+    "generated": true,
+    "complete": true,
+    "opts": false
+}

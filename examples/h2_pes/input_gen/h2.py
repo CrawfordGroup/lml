@@ -27,7 +27,7 @@ dlist = pes.generate(opts,directory='./h2_pes',extra=extra_stuff)
 pes.save()
 
 # Run all input files on the PES
-pes.run()
+pes.run(progress=True)
 pes.save()
 
 # Pull results from output json and custom files in directory structure
@@ -47,7 +47,7 @@ plt.plot(mp2_reps[25])
 plt.savefig('tatr.png')
 
 # Graph the PESs!
-pes = np.linspace(0.5,2.0,50)
+pes = np.linspace(pes.dis[0], pes.dis[1], pes.pts)
 plt.figure(1,dpi=200)
 plt.plot(pes,scf_E,'y-',label='SCF PES')
 plt.plot(pes,mp2_E,'r--',label='MP2 PES')
