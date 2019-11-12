@@ -7,12 +7,6 @@ __pycache__/*
 .pytest*
 *.npy
 *.dat
-mlqm/tests/example_pes/*
-examples/h2o/input_gen/h2o/*
-examples/h2o/input_gen/h2o_pes/*
-examples/h2o2/h2o2_pes/*
 examples/h2_pes/coulomb/pes/*
 examples/h2_pes/input_gen/h2_pes/*
 examples/multi-species training/pes/*
-examples/n2h2/n2h2/*
-examples/n2h2/n2h2_pes/*
