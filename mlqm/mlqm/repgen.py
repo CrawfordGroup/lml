@@ -2,84 +2,129 @@ import psi4
 psi4.core.be_quiet()
 import numpy as np
 
-def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
+from . import molecule
+
+"""
+repgen
+
+This module contains a series of functions to create a variety of
+representations from molecular data.
+
+Contributors: Ben Peyton, Connor Briggs
+
+Functions
+---------
+make_coulomb
+    Creates the Coulomb matrix based on the geometry.
+
+make_tatr
+    Creates the T-amplitude tensor representation from the T2 and
+    optionally the T1 tensors.
+
+make_dtr
+    Creates the density tensor representation from the one-particle and
+    optionally the two-particle density matrices.
+
+gaus
+    Calculate the value along a Gaussian curve.
+"""
+
+def make_coulomb(molecule, ignore_matrix_symmetry = True, **kwargs) :
     """
+    make_coulomb
+    
     Make a list of the biggest values in the Coulomb matrices for the
     molecules with an optional number of points and an option to ignore
-    the symmetry of the matrix. The coords should be a list of arrays
-    containing the 3-D coordinates of each atom. The charges should be
-    the corresponding charge for each atom, so that charges[i] should be
-    the charge on the atom at position coords[i]. n is the maximum number
-    of reps to take. If n is "full" (case insensitive), 0, or None, this
-    will return all the values, rather than cutting off. cutoff is the
-    numeric cutoff for the values. If cutoff is set and n is set but not 0,
-    None, or "full", then the function will return up to n values all above
-    the cutoff. If ignore_matrix_symmetry is set to true, as it is by default,
-    then the fact that the coulomb matrix is symmetric will be ignored. This
-    means that all except the diagonal elements will be included twice. If it
-    is set to false, then the symmetry is taken into account.
-
-    Default values:
-    ignore_matrix_symmetry = True
-    n = 100
-    cutoff = None
+    the symmetry of the matrix.
 
     Formula for the Coulomb matrix from
     https://singroup.github.io/dscribe/tutorials/coulomb_matrix.html
+
+    Contributor: Connor Briggs
+
+    Parameters
+    ----------
+    molecule
+        the molecule.Molecule to use to create the reps.
+        
+    ignore_matrix_symmetry = True
+        Whether to ignore the fact that the Coulomb matrix is symmetric when
+        considering the elements. If False, then the off-diagonal elements
+        will not be duplicated.
+
+    cutoff = None, n = 100
+        The absolute cutoff for which elements are considered significant
+        (cutoff), and the number of elements to include (n). If cutoff is None,
+        then the behavior depends on n. If n <= 0 or n == 'full'
+        and cutoff is None, then all elements will be included. If n > 0, and
+        cutoff is None, then the n most significant elements will be included.
+        If n > 0 and cutoff is not None, then the n most significant elements
+        above cutoff will be included, and if there are not enough elements
+        above the cutoff, the rest will be zero-padded.
     """
     out = []
-    for k in range(len(charges)) :
-        coul = [[(charges[k][i] ** 2.4 / 2) if i == j else
-                 charges[k][i] * charges[k][j] /
-                 np.linalg.norm(np.array(coords[k][i]) - np.array(coords[k][j]))
-                 for j in range(len(charges[k]))] for i in range(len(charges[k]))]
-                                 
-        if ignore_matrix_symmetry :
-            reps = []
-            for r in coul :
-               reps.extend(r)
-            reps = sorted(reps, reverse = True)
-            if "cutoff" in kwargs and kwargs["cutoff"] != None :
-                reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-            if "n" in kwargs and not \
-               ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-                kwargs["n"] == None or kwargs["n"] <= 0) :
-                if len(reps) < kwargs["n"] :
-                    reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-                else :
-                    reps = reps[0:kwargs["n"] - 1]
-            elif "n" not in kwargs and "cutoff" not in kwargs :
-            #If n is not passed and cutoff is not passed, default to 100 reps
-                if len(reps) < 100 :
-                    reps.extend(0 for i in range(100 - len(reps)))
-                else :
-                    reps = reps[0:99]
-            out.append(reps)
+    charges = [g[1] for g in molecule.geometry()]
+    coul = [[(charges[k][i] ** 2.4 / 2) if i == j else
+                charges[k][i] * charges[k][j] /
+             np.linalg.norm(np.array(coords[k][i]) -
+                            np.array(coords[k][j]))
+             for j in range(len(charges[k]))] for i in
+            range(len(charges[k]))]
+
+    if ignore_matrix_symmetry :
+        for r in coul :
+            out.extend(r)
+    else :
+        for i in range(len(coul)) :
+            out.extend(coul[i][i:])
+    out = sorted(out, reverse = True)
+        
+    if "cutoff" in kwargs and kwargs["cutoff"] != None :
+        reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
+    if "n" in kwargs and not \
+        ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
+        kwargs["n"] == None or kwargs["n"] <= 0) :
+        if len(reps) < kwargs["n"] :
+            reps.extend(0 for i in range(kwargs["n"] - len(reps)))
         else :
-            reps = []
-            for i in range(len(coul)) :
-                reps.extend(coul[i][i:])
-            reps = sorted(reps, reverse = True)
-            if "cutoff" in kwargs and kwargs["cutoff"] != None :
-                reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-            if "n" in kwargs and not \
-               ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-                kwargs["n"] == None or kwargs["n"] <= 0) :
-                if len(reps) < kwargs["n"] :
-                    reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-                else :
-                    reps = reps[0:kwargs["n"] - 1]
-            out.append(reps)
+            reps = reps[0:kwargs["n"] - 1]
     return out
 
 def make_tatr(method,t2,t1=None,x=150,st=0.05):
 # {{{
     '''
-    make t-amp tensor representation and method
-    pass in a dictionary containing the amplitudes
-    plus (optional) the number of points
-    and (optional) the sigma for the gaussian
-    return the tatr
+    make_tatr
+    
+    Make the T-amplitude tensor representation.
+
+    Contributor: Ben Peyton
+
+    Parameters
+    ----------
+    method
+        A string containing the method for the T amplitudes. Can
+        be currently 'CCSD', 'CCSD-NAT', or 'MP2'.
+
+    t2
+        The T2 amplitudes.
+
+    t1 = None
+        The T1 amplitudes if desired.
+
+    x = 150
+        The number of significant representations to return.
+
+    st = 0.05
+        The width of the Gaussian.
+
+    Raises
+    ------
+    ValueError
+        If the method is not recognized.
+
+    Returns
+    -------
+    The T-amplitude tensor representation.
     '''
 
     if (method.upper() == "CCSD") or (method.upper() == "CCSD-NAT"):
@@ -120,8 +165,7 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
         # }}}
 
     else: 
-        print("I don't know how to handle {} amplitudes.".format(method))
-        raise Exception("{} amplitude representations not supported!".format(method))
+        raise ValueError("{method} amplitude representations not supported!")
 
     return np.asarray(tatr)
 # }}}
@@ -129,18 +173,49 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
 def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
 # {{{
     """
+    make_dtr
+    
     Many-body tensor with density elements (density tensor representation). 
     Currently tested for MP2 OPDM only.
-    Pass in the OPDM given by wfn.Da() plus optional TPDM.
-    x: discretization region along [-1:1] of the tensor (default 150)
-    st: width of gaussians summed along the tensor (default 0.05)
-    cut_type: type of cutoff of PDM elements after ravel and magnitude sort
-        'full': use all elements (ignore cut_val)
-        'min': use all elements above float(cut_val)
-        'top': use highest int(cut_val) elements
-        'percent': use highest float(cut_val)*100% elements
-        'percent_min': tuple(m,n) highest float(m)*100% elements with magnitude greater than float(n)
-    cut_val: value used in above cut_type (ignored if cut_type == 'full', type must match)
+
+    Contributor: Ben Peyton
+
+    Parameters
+    ----------
+    opdm
+        The one-particle density matrix.
+
+    tpdm = None
+        The two-particle density matrix, if desired.
+
+    x = 150
+        The number of points to use to discretize the tensor.
+
+    st = 0.05
+        The width of the gaussians to sum over when creating the reps.
+
+    cut_type = 'full'
+        The way to determine the number of reps to return. 'full' gives all
+        the reps; 'min' gives any reps above cut_val; 'top' gives the largest
+        reps, totaling cut_val reps; 'percent' gives the top cut_val percent of
+        the total; 'percent_min' gives the top cut_val[0] percent of all reps
+        above cut_val[1].
+
+    cut_val = None
+        The cutoff value. Its contents depend on cut_type. If cut_type is
+        'full', then it should be None; if 'min' or 'percent' it should be
+        a float; if 'top' it should be an int; if 'percent_min' it should
+        be indexable containing two floats representing the fraction and the
+        cutoff value.
+
+    Raises
+    ------
+    ValueError
+        if cut_type is not recognized.
+
+    Returns
+    -------
+    The density tensor representation.
     """
 
     # sort OPDM and t2 by magnitude (sorted(x,key=abs) will ignore sign) 
@@ -170,7 +245,7 @@ def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
             tpdm = tpdm[abs(tpdm) > cut_val[1]]
             tpdm = tpdm[-round(cut_val[0]*len(tpdm)):]
     else:
-        raise RuntimeError("Cutoff type '{}' not recognized.".format(cut_type))
+        raise ValueError("Cutoff type '{cut_type}' not recognized.")
 
     # make a discretized gaussian using the PDMs
     dtr = [] # store eq vals
@@ -190,120 +265,27 @@ def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
 def gaus(x, u, s):
 # {{{
     '''
-    return a gaussian point x centered on u with width s
+    gaus
+
+    Returns the value of a Gaussian curve at point x centered on u with a width
+    of s.
+
+    Contributor: Ben Peyton
+
+    Parameters
+    ----------
+    x
+        The distance of the point from the origin.
+
+    u
+        The distance of the peak from the origin.
+
+    s
+        The width of the peak.
+
+    Returns
+    -------
+    The value of the specified Gaussian curve.
     '''
-    return np.exp(-1 * (x-u)**2 / (2.0*s**2))
-# }}}
-
-def legacy_CCSD_NAT():
-#    elif theory == "CCSD-NAT":
-#        # {{{
-#        # compute and grab amplitudes
-#        scf_e,scf_wfn = psi4.energy('scf',return_wfn=True)
-##        e,wfn1 = psi4.gradient('ccsd',return_wfn=True,ref_wfn=scf_wfn)
-#        e,wfn1 = psi4.energy('ccsd',molecule=mol,return_wfn=True,ref_wfn=scf_wfn)
-#        psi4.oeprop(wfn1,'DIPOLE')
-#        D = wfn1.Da_subset("MO").to_array()
-#        w,v = np.linalg.eigh(D)
-#        w = np.flip(w,axis=0)
-#        v = np.flip(v,axis=1)
-#        new_C = scf_wfn.Ca().to_array() @ v
-#        scf_wfn.Ca().copy(psi4.core.Matrix.from_array(new_C))
-#        psi4.core.clean()
-#        psi4.core.clean_options()
-#        psi4.core.clean_variables()
-#        psi4.set_options({
-#            'basis':bas,
-#            'scf_type':'pk',
-#            'freeze_core':'false',
-#            'e_convergence':1e-8,
-#            'd_convergence':1e-8})
-#        e,wfn2 = psi4.energy('ccsd',molecule=mol,return_wfn=True,ref_wfn=scf_wfn)
-#
-#        amps = wfn2.get_amplitudes()
-#
-#        # sort amplitudes by magnitude (sorted(x,key=abs) will ignore sign) 
-#        t1 = sorted(amps['tIA'].to_array().ravel(),key=abs)[-x:]
-#        t2 = sorted(amps['tIjAb'].to_array().ravel(),key=abs)[-x:]
-#
-#        # make a discretized gaussian using the amps
-#        tatr = [] # store eq vals
-#        x_list = np.linspace(-1,1,x)
-#        for i in range(0,x):
-#            val1 = 0
-#            val2 = 0
-#            for t_1 in range(0,len(t1)):
-#                val1 += gaus(x_list[i],t1[t_1],st)
-#            for t_2 in range(0,len(t2)):
-#                val2 += gaus(x_list[i],t2[t_2],st)
-#            tatr.append(val1)
-#            tatr.append(val2)
-#        return np.asarray(tatr), wfn2, wfn1
-#        # }}}
-    pass
-
-def legacy_make_dtr(method,t2,nmo,nocc,t1=None,x=300,st=0.05):
-# {{{
-    if method == "MP2":
-        # Build T2_tilde Amplitudes (closed-shell spin-free analog of antisymmetrizer),
-        # i.e., t2_tilde[p,q,r,s] = 2 * t2[p,q,r,s] - t2[p,q,s,r]),
-        # where t2_tilde = [2<ij|ab> - <ij|ba>] / (e_i + e_j - e_a - e_b)
-        t2_tilde = 2 * t2 - t2.swapaxes(2, 3)
-
-        # Build MP2 one- and two-particle density matrices
-        # see MP2 Gradient code in Psi4Numpy for details
-
-        # Build MP2 OPDM
-        # {{{
-        Ppq = np.zeros((nmo, nmo))
-        
-        # Build OO block of MP2 OPDM
-        # Pij = - 1/2 sum_kab [( t2(i,k,a,b) * t2_tilde(j,k,a,b) ) + ( t2(j,k,a,b) * t2_tilde(i,k,a,b) )]
-        Pij = -0.5 * np.einsum('ikab,jkab->ij', t2, t2_tilde, optimize=True)
-        Pij += -0.5 * np.einsum('jkab,ikab->ij', t2, t2_tilde, optimize=True)
-        
-        # Build VV block of MP2 OPDM
-        # Pab = 1/2 sum_ijc [( t2(i,j,a,c) * t2_tilde(i,j,b,c) ) + ( t2(i,j,b,c) * t2_tilde(i,j,a,c) )]
-        Pab = 0.5 * np.einsum('ijac,ijbc->ab', t2, t2_tilde, optimize=True)
-        Pab += 0.5 * np.einsum('ijbc,ijac->ab', t2, t2_tilde, optimize=True)
-        
-        # Build Total OPDM
-        Ppq[:nocc, :nocc] = Pij
-        Ppq[nocc:, nocc:] = Pab
-        # }}}
-
-        # Build MP2 TPDM
-        # {{{
-        Ppqrs = np.zeros((nmo, nmo, nmo, nmo))
-        
-        # Build <OO|VV> and <VV|OO> blocks of MP2 TPDM
-        Ppqrs[:nocc, :nocc, nocc:, nocc:] = t2
-        Ppqrs[nocc:, nocc:, :nocc, :nocc] = t2.T
-        # }}}
-
-        # Build the density tensor representation
-        # {{{
-        # sort PDMs by magnitude (sorted(x,key=abs) will ignore sign) 
-        Ppq = sorted(Ppq.ravel(),key=abs)[-x:]
-        Ppqrs = sorted(Ppqrs.ravel(),key=abs)[-x:]
-
-        # make a discretized gaussian using the PDMs
-        dtr = [] # store eq vals
-        x_list = np.linspace(-1,1,x)
-        for i in range(0,x):
-            val1 = 0
-            val2 = 0
-            for p_1 in range(0,len(Ppq)):
-                val1 += gaus(x_list[i],Ppq[p_1],st)
-            for p_2 in range(0,len(Ppqrs)):
-                val2 += gaus(x_list[i],Ppqrs[p_2],st)
-            dtr.append(val1)
-            dtr.append(val2)
-        # }}}
-
-    else:
-        print("Density tensor representations not available for this method.")
-        raise RuntimeError("DTR not supported for {}".format(method))
-
-    return np.asarray(dtr)
+    return np.exp(-1 * (x-u)**2 / (2.0 * s**2))
 # }}}

@@ -139,7 +139,8 @@ class PESBuilder(base.MolsetBuilder) :
             # Change units to Bohr.
             mol.set_units(psi4.core.GeometryUnits(1))
             geom_array = mol.geometry().to_array()
-            out_geom = [tuple([mol.symbol(i), mol.mass(i)] + list(geom_array[i]))
+            out_geom = [tuple([mol.symbol(i), int(mol.charge(i)), mol.mass(i)]
+                              + list(geom_array[i]))
                         for i in range(mol.natom())]
 
             # Yield the current geometry.

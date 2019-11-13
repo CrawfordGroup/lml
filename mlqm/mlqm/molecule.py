@@ -31,7 +31,7 @@ class Molecule :
 
     __geometry: list
         Specification of the geometry of the molecule. Each entry in the list
-        will look like (atomic_symb: str, mass: float, x, y, z).
+        will look like (atomic_symbol, atomic_num, mass, x, y, z).
 
     __charge: int
         The total charge on the molecule.
@@ -47,23 +47,23 @@ class Molecule :
     __init__(self, name, geometry, charge, spin, meta = None)
         Constructor
 
-    geometry(self)
-    charge(self)
-    spinstate(self)
-    metadata(self)
+    geometry
+    spinstate
+    charge
+    metadata
         Getters for these values.
 
-    __str__(self)
+    __str__
         Returns the name.
     """
 
-    def __init__(self, name, geometry, charge, spin, meta = None) :
+    def __init__(self, name, geometry, charge = 0, spin = 1, meta = None) :
         """
         Molecule.__init__
         
         Initialize a molecule. Geometry should be a list where each element is
         of the form
-        (atomic_symb, mass, x, y, z)
+        (atomic_symb, atomic_num, mass, x, y, z)
         The 'meta' parameter passes other data to store with this molecule.
         This allows for things like storing snapshot numbers or PES coordinates.
 
@@ -76,10 +76,11 @@ class Molecule :
 
         geometry
             The geometry of the molecule. It should be in the form of
-            (atomic_symb, mass, x, y, z), where atomic_symb is the atomic
-            symbol of the atom at this point, mass is the mass in atomic units
-            at the point, and x, y, and z are the coordinates of the atom in
-            Ångstrom.
+            (atomic_symb, atomic_number, mass, x, y, z), where atomic_symb is
+            the atomic symbol of the atom at this point, atomic_number is the
+            atomic number of the atom at this point, mass is the mass in
+            atomic units at the point, and x, y, and z are the coordinates of
+            the atom in Ångstrom.
 
         charge
             The total charge on the molecule in electron charges.
@@ -178,3 +179,4 @@ class Molecule :
             The name of the molecule.
         """
         return self.__name
+    
