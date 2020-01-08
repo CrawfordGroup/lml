@@ -3,6 +3,7 @@ psi4.core.be_quiet()
 import numpy as np
 
 def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
+# {{{
     """
     Make a list of the biggest values in the Coulomb matrices for the
     molecules with an optional number of points and an option to ignore
@@ -71,23 +72,57 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
                     reps = reps[0:kwargs["n"] - 1]
             out.append(reps)
     return out
+# }}}
 
-def make_tatr(method,t2,t1=None,x=150,st=0.05):
+def make_tatr(method,t,x=150,st=0.05,cut_type='top',cut_val=150):
 # {{{
     '''
-    make t-amp tensor representation and method
-    pass in a dictionary containing the amplitudes
-    plus (optional) the number of points
-    and (optional) the sigma for the gaussian
-    return the tatr
+    Many-body tensor with wave function amplitudes (t-amplitude tensor representation). 
+    method: string, 'ccsd' (requires 't2' and 't1' in t) or 'mp2' (requires only 't2')
+    t: dictionary containing amplitudes
+    x: points in discretization region along [-1:1] of the tensor (default 150)
+    st: width of gaussians summed along the tensor (default 0.05)
+    cut_type: type of cutoff of PDM elements after ravel and magnitude sort
+        'full': use all elements (ignore cut_val)
+        'min': use all elements above float(cut_val)
+        'top': use highest int(cut_val) elements
+        'percent': use highest float(cut_val)*100% elements
+        'percent_min': tuple(m,n) highest float(m)*100% elements with magnitude greater than float(n)
+    cut_val: value used in above cut_type (ignored if cut_type == 'full', type must match)
     '''
 
     if (method.upper() == "CCSD") or (method.upper() == "CCSD-NAT"):
         # {{{
-        # sort amplitudes by magnitude and keep the highest x
+        # sort amplitudes by magnitude
         # (sorted(x,key=abs) will ignore sign) 
-        t1 = sorted(t1.ravel(),key=abs)[-x:]
-        t2 = sorted(t2.ravel(),key=abs)[-x:]
+        try:
+            t1 = sorted(t['t1'].ravel(),key=abs)
+        except KeyError:
+            print('t1 amplitudes not found! CCSD-TATR generation halted.')
+        try:
+            t2 = sorted(t['t2'].ravel(),key=abs)
+        except KeyError:
+            print('t2 amplitudes not found! CCSD-TATR generation halted.')
+
+        # deal with cutoffs
+        if cut_type.lower() == 'full':
+            pass
+        elif cut_type.lower() == 'min':
+            t1 = t1[abs(t1) > cut_val]
+            t2 = t2[abs(t2) > cut_val]
+        elif cut_type.lower() == 'top':
+            t1 = t1[-cut_val:]
+            t2 = t2[-cut_val:]
+        elif cut_type.lower() == 'percent':
+            t1 = t1[-round(cut_val*len(t1)):]
+            t2 = t2[-round(cut_val*len(t2)):]
+        elif cut_type.lower() == 'percent_min':
+            t1 = t1[abs(t1) > cut_val[1]]
+            t1 = t1[-round(cut_val[0]*len(t1)):]
+            t2 = t2[abs(t2) > cut_val[1]]
+            t2 = t2[-round(cut_val[0]*len(t2)):]
+        else:
+            raise RuntimeError("Cutoff type '{}' not recognized.".format(cut_type))
 
         # make a discretized gaussian using the amps
         tatr = [] # store eq vals
@@ -105,9 +140,27 @@ def make_tatr(method,t2,t1=None,x=150,st=0.05):
 
     elif method.upper() == "MP2":
         # {{{
-        # sort amplitudes by magnitude and keep the highest x
+        # sort amplitudes by magnitude
         # (sorted(x,key=abs) will ignore sign) 
-        t2 = sorted(t2.ravel(),key=abs)[-x:]
+        try:
+            t2 = sorted(t['t2'].ravel(),key=abs)
+        except KeyError:
+            print('t2 amplitudes not found! CCSD-TATR generation halted.')
+
+        # deal with cutoffs
+        if cut_type.lower() == 'full':
+            pass
+        elif cut_type.lower() == 'min':
+            t2 = t2[abs(t2) > cut_val]
+        elif cut_type.lower() == 'top':
+            t2 = t2[-cut_val:]
+        elif cut_type.lower() == 'percent':
+            t2 = t2[-round(cut_val*len(t2)):]
+        elif cut_type.lower() == 'percent_min':
+            t2 = t2[abs(t2) > cut_val[1]]
+            t2 = t2[-round(cut_val[0]*len(t2)):]
+        else:
+            raise RuntimeError("Cutoff type '{}' not recognized.".format(cut_type))
 
         # make a discretized gaussian using the amps
         tatr = [] # store eq vals
@@ -132,7 +185,7 @@ def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
     Many-body tensor with density elements (density tensor representation). 
     Currently tested for MP2 OPDM only.
     Pass in the OPDM given by wfn.Da() plus optional TPDM.
-    x: discretization region along [-1:1] of the tensor (default 150)
+    x: points in discretization region along [-1:1] of the tensor (default 150)
     st: width of gaussians summed along the tensor (default 0.05)
     cut_type: type of cutoff of PDM elements after ravel and magnitude sort
         'full': use all elements (ignore cut_val)
@@ -143,7 +196,7 @@ def make_dtr(opdm,tpdm=None,x=150,st=0.05,cut_type='full',cut_val=None):
     cut_val: value used in above cut_type (ignored if cut_type == 'full', type must match)
     """
 
-    # sort OPDM and t2 by magnitude (sorted(x,key=abs) will ignore sign) 
+    # sort OPDM and TPDM by magnitude (sorted(x,key=abs) will ignore sign) 
     opdm = np.array(sorted(opdm.ravel(),key=abs))
     if tpdm:
         tpdm = np.array(sorted(tpdm.ravel(),key=abs))

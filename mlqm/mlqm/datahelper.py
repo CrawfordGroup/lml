@@ -165,7 +165,7 @@ def grabber(dlist,fnames=False,varnames=False,outfile='output.json'):
 def get_amps(wfn,method):
     # {{{
     '''
-    Grab aomplutudes from the wfn
+    Grab amplutudes from the wfn
     CCSD just uses wfn.get_amplitudes()
     MP2 builds them from the integrals, Fock, and Hamiltonian
     NOTE: wfn.get_amplitudes() only works for C1 symmetry, 
