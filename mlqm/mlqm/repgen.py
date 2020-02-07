@@ -21,7 +21,7 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
 
     Default values:
     ignore_matrix_symmetry = True
-    n = 100
+    n = "full"
     cutoff = None
 
     Formula for the Coulomb matrix from
@@ -44,13 +44,7 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
             if len(reps) < kwargs["n"] :
                 reps.extend(0 for i in range(kwargs["n"] - len(reps)))
             else :
-                reps = reps[0:kwargs["n"] - 1]
-        elif "n" not in kwargs and "cutoff" not in kwargs :
-        #If n is not passed and cutoff is not passed, default to 100 reps
-            if len(reps) < 100 :
-                reps.extend(0 for i in range(100 - len(reps)))
-            else :
-                reps = reps[0:99]
+                reps = reps[0:kwargs["n"] - 1]    
         return reps
     else :
         reps = []
