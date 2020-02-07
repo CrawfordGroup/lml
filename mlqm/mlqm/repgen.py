@@ -27,51 +27,47 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
     Formula for the Coulomb matrix from
     https://singroup.github.io/dscribe/tutorials/coulomb_matrix.html
     """
-    out = []
-    for k in range(len(charges)) :
-        coul = [[(charges[k][i] ** 2.4 / 2) if i == j else
-                 charges[k][i] * charges[k][j] /
-                 np.linalg.norm(np.array(coords[k][i]) - np.array(coords[k][j]))
-                 for j in range(len(charges[k]))] for i in range(len(charges[k]))]
-                                 
-        if ignore_matrix_symmetry :
-            reps = []
-            for r in coul :
-               reps.extend(r)
-            reps = sorted(reps, reverse = True)
-            if "cutoff" in kwargs and kwargs["cutoff"] != None :
-                reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-            if "n" in kwargs and not \
-               ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-                kwargs["n"] == None or kwargs["n"] <= 0) :
-                if len(reps) < kwargs["n"] :
-                    reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-                else :
-                    reps = reps[0:kwargs["n"] - 1]
-            elif "n" not in kwargs and "cutoff" not in kwargs :
-            #If n is not passed and cutoff is not passed, default to 100 reps
-                if len(reps) < 100 :
-                    reps.extend(0 for i in range(100 - len(reps)))
-                else :
-                    reps = reps[0:99]
-            out.append(reps)
-        else :
-            reps = []
-            for i in range(len(coul)) :
-                reps.extend(coul[i][i:])
-            reps = sorted(reps, reverse = True)
-            if "cutoff" in kwargs and kwargs["cutoff"] != None :
-                reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-            if "n" in kwargs and not \
-               ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-                kwargs["n"] == None or kwargs["n"] <= 0) :
-                if len(reps) < kwargs["n"] :
-                    reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-                else :
-                    reps = reps[0:kwargs["n"] - 1]
-            out.append(reps)
-    return out
-
+    coul = [[(charges[i] ** 2.4 / 2) if i == j else
+                 charges[i] * charges[j] /
+                 np.linalg.norm(np.array(coords[i]) - np.array(coords[j]))
+                 for j in range(len(charges))] for i in range(len(charges))]
+    if ignore_matrix_symmetry :
+        reps = []
+        for r in coul :
+            reps.extend(r)
+        reps = sorted(reps, reverse = True)
+        if "cutoff" in kwargs and kwargs["cutoff"] != None :
+            reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
+        if "n" in kwargs and not \
+           ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
+            kwargs["n"] == None or kwargs["n"] <= 0) :
+            if len(reps) < kwargs["n"] :
+                reps.extend(0 for i in range(kwargs["n"] - len(reps)))
+            else :
+                reps = reps[0:kwargs["n"] - 1]
+        elif "n" not in kwargs and "cutoff" not in kwargs :
+        #If n is not passed and cutoff is not passed, default to 100 reps
+            if len(reps) < 100 :
+                reps.extend(0 for i in range(100 - len(reps)))
+            else :
+                reps = reps[0:99]
+        return reps
+    else :
+        reps = []
+        for i in range(len(coul)) :
+            reps.extend(coul[i][i:])
+        reps = sorted(reps, reverse = True)
+        if "cutoff" in kwargs and kwargs["cutoff"] != None :
+            reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
+        if "n" in kwargs and not \
+            ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
+            kwargs["n"] == None or kwargs["n"] <= 0) :
+            if len(reps) < kwargs["n"] :
+                reps.extend(0 for i in range(kwargs["n"] - len(reps)))
+            else :
+                reps = reps[0:kwargs["n"] - 1]
+        return reps
+    
 def make_tatr(method,t2,t1=None,x=150,st=0.05):
 # {{{
     '''
