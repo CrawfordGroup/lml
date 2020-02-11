@@ -8,6 +8,7 @@ import copy
 from . import train
 from . import datahelper
 from . import krr
+import os
 
 class Mol_Set(object):
     """
@@ -341,12 +342,12 @@ class Dataset(object):
         if inpf is not None:
             if isinstance(inpf,str):
                 if not os.path.isfile(inpf) and \
-                   (("raise_on_error" in kwargs and kwargs["raise_on_error"] or
+                   (("raise_on_error" in kwargs and kwargs["raise_on_error"]) or
                      "raise_on_error" not in kwargs) :
                     raise FileNotFoundError(f"Could not find the file {inpf}:"
                                         + " Can not create Dataset.")
                 elif not os.path.isfile(inpf) and \
-                    ("raise_on_error" in kwargs and not kwargs["raise_on_error"):
+                    ("raise_on_error" in kwargs and not kwargs["raise_on_error"]):
                      print(f"Could not find the file {inpf}: Initializing empty"
                            + " Dataset")
                      self.inpf = inpf

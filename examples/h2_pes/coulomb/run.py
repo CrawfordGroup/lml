@@ -31,7 +31,8 @@ np.save("charges.npy", np.array([mol.fZ(i) for i in range(mol.natom())]))
     ccsd_E = np.add(scf_E, ccsd_corr)
     geoms = [m for m in list(results["geom.npy"].values())]
     charges = [m for m in list(results["charges.npy"].values())]
-    reps = mlqm.repgen.make_coulomb(geoms, charges)
+    reps = [mlqm.repgen.make_coulomb(geoms[m], charges[m]).flatten()
+            for m in range(len(geoms))]
 
     ds = mlqm.Dataset(inpf = "ml.json", reps = reps, vals = ccsd_corr)
 

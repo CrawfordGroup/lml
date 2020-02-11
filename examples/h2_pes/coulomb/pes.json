@@ -10,7 +10,6 @@
         "2.0"
     ],
     "basis": "CC-PVTZ",
-    "generated": true,
-    "complete": true,
-    "opts": false
+    "generated": false,
+    "complete": false
 }

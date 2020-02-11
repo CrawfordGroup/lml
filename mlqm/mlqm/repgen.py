@@ -21,6 +21,7 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, sort = False,
     Formula for the Coulomb matrix from
     https://singroup.github.io/dscribe/tutorials/coulomb_matrix.html
     """
+    
     coul = np.array([[(charges[i] ** 2.4 / 2) if i == j else
                  charges[i] * charges[j] /
                  np.linalg.norm(np.array(coords[i]) - np.array(coords[j]))
@@ -30,21 +31,21 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, sort = False,
     if ignore_matrix_symmetry :
         reps = coul.flatten()
         if sort :
-          reps = sorted(reps, reverse = True)
-          if "cutoff" in kwargs and kwargs["cutoff"] != None :
-              reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-          if "n" in kwargs and not \
-             ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-              kwargs["n"] == None or kwargs["n"] <= 0) :
-              if len(reps) < kwargs["n"] :
-                  reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-              else :
-                  reps = reps[0:kwargs["n"] - 1]    
+            reps = sorted(reps, reverse = True)
+            if "cutoff" in kwargs and kwargs["cutoff"] != None :
+                reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
+            if "n" in kwargs and not \
+               ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
+                kwargs["n"] == None or kwargs["n"] <= 0) :
+                if len(reps) < kwargs["n"] :
+                    reps.extend(0 for i in range(kwargs["n"] - len(reps)))
+                else :
+                    reps = reps[0:kwargs["n"] - 1]    
         return reps
     else :
         reps = coul[np.tril_indices(len(coul))]
-            if sort :
-                reps = sorted(reps, reverse = True)
+        if sort :
+            reps = sorted(reps, reverse = True)
             if "cutoff" in kwargs and kwargs["cutoff"] != None :
                 reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
             if "n" in kwargs and not \
