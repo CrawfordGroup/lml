@@ -29,41 +29,39 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, sort = False,
     Formula for the Coulomb matrix from
     https://singroup.github.io/dscribe/tutorials/coulomb_matrix.html
     """
-    coul = [[(charges[i] ** 2.4 / 2) if i == j else
+    coul = np.array([[(charges[i] ** 2.4 / 2) if i == j else
                  charges[i] * charges[j] /
                  np.linalg.norm(np.array(coords[i]) - np.array(coords[j]))
-                 for j in range(len(charges))] for i in range(len(charges))]
+                 for j in range(len(charges))] for i in range(len(charges))])
+    if ignore_matrix_symmetry and not sort :
+        return coul
     if ignore_matrix_symmetry :
-        reps = []
-        for r in coul :
-            reps.extend(r)
+        reps = coul.flatten()
         if sort :
-            reps = sorted(reps, reverse = True)
-        if "cutoff" in kwargs and kwargs["cutoff"] != None :
-            reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-        if "n" in kwargs and not \
-           ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-            kwargs["n"] == None or kwargs["n"] <= 0) :
-            if len(reps) < kwargs["n"] :
-                reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-            else :
-                reps = reps[0:kwargs["n"] - 1]    
+          reps = sorted(reps, reverse = True)
+          if "cutoff" in kwargs and kwargs["cutoff"] != None :
+              reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
+          if "n" in kwargs and not \
+             ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
+              kwargs["n"] == None or kwargs["n"] <= 0) :
+              if len(reps) < kwargs["n"] :
+                  reps.extend(0 for i in range(kwargs["n"] - len(reps)))
+              else :
+                  reps = reps[0:kwargs["n"] - 1]    
         return reps
     else :
-        reps = []
-        for i in range(len(coul)) :
-            reps.extend(coul[i][i:])
-        if sort :
-            reps = sorted(reps, reverse = True)
-        if "cutoff" in kwargs and kwargs["cutoff"] != None :
-            reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
-        if "n" in kwargs and not \
-            ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
-            kwargs["n"] == None or kwargs["n"] <= 0) :
-            if len(reps) < kwargs["n"] :
-                reps.extend(0 for i in range(kwargs["n"] - len(reps)))
-            else :
-                reps = reps[0:kwargs["n"] - 1]
+        reps = coul[np.tril_indices(len(coul))]
+            if sort :
+                reps = sorted(reps, reverse = True)
+            if "cutoff" in kwargs and kwargs["cutoff"] != None :
+                reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
+            if "n" in kwargs and not \
+                ((kwargs["n"] is str and kwargs["n"].lower() == "full") or
+                kwargs["n"] == None or kwargs["n"] <= 0) :
+                if len(reps) < kwargs["n"] :
+                    reps.extend(0 for i in range(kwargs["n"] - len(reps)))
+                else :
+                    reps = reps[0:kwargs["n"] - 1]
         return reps
     
 def make_tatr(method,t2,t1=None,x=150,st=0.05):
