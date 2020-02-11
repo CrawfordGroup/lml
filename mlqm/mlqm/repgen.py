@@ -44,8 +44,8 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, sort = False,
         return reps
     else :
         reps = coul[np.tril_indices(len(coul))]
-            if sort :
-                reps = sorted(reps, reverse = True)
+        if sort :
+            reps = sorted(reps, reverse = True)
             if "cutoff" in kwargs and kwargs["cutoff"] != None :
                 reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
             if "n" in kwargs and not \
