@@ -2,11 +2,12 @@ import psi4
 psi4.core.be_quiet()
 import numpy as np
 
-def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
+def make_coulomb(coords, charges, ignore_matrix_symmetry = True, sort = False,
+                 **kwargs) :
     """
     Make a list of the biggest values in the Coulomb matrices for the
     molecules with an optional number of points and an option to ignore
-    the symmetry of the matrix. The coords should be a list of arrays
+    the symmetry of the matrix, if sorted. The coords should be a list of arrays
     containing the 3-D coordinates of each atom. The charges should be
     the corresponding charge for each atom, so that charges[i] should be
     the charge on the atom at position coords[i]. n is the maximum number
@@ -23,7 +24,8 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
     ignore_matrix_symmetry = True
     n = "full"
     cutoff = None
-
+    sort = False
+    
     Formula for the Coulomb matrix from
     https://singroup.github.io/dscribe/tutorials/coulomb_matrix.html
     """
@@ -35,7 +37,8 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
         reps = []
         for r in coul :
             reps.extend(r)
-        reps = sorted(reps, reverse = True)
+        if sort :
+            reps = sorted(reps, reverse = True)
         if "cutoff" in kwargs and kwargs["cutoff"] != None :
             reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
         if "n" in kwargs and not \
@@ -50,7 +53,8 @@ def make_coulomb(coords, charges, ignore_matrix_symmetry = True, **kwargs) :
         reps = []
         for i in range(len(coul)) :
             reps.extend(coul[i][i:])
-        reps = sorted(reps, reverse = True)
+        if sort :
+            reps = sorted(reps, reverse = True)
         if "cutoff" in kwargs and kwargs["cutoff"] != None :
             reps = [r for r in reps if abs(r) >= abs(kwargs["cutoff"])]
         if "n" in kwargs and not \
