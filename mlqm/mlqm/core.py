@@ -324,7 +324,7 @@ class Dataset(object):
     Keyword Args:
     raise_on_error = True :
         Whether to raise an error when the input file is not found (True),
-        or to make an empty PES if it is not found (False).
+        or to make an empty Dataset if it is not found (False).
     """
 
     def __init__(self, inpf=None, reps=None, vals=None, **kwargs):
