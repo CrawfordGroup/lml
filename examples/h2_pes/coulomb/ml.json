@@ -2,7 +2,7 @@
     "setup": {
         "name": "learn-coulomb",
         "valtype": "J",
-        "predtype": "SCF",
+        "predtype": "CCSD",
         "M": 12,
         "N": 100,
         "st": 0.05,
