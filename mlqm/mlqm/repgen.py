@@ -5,20 +5,12 @@ import numpy as np
 def make_coulomb(coords, charges, ignore_matrix_symmetry = True, sort = False,
                  **kwargs) :
     """
-    Make a list of the biggest values in the Coulomb matrices for the
-    molecules with an optional number of points and an option to ignore
-    the symmetry of the matrix, if sorted. The coords should be a list of arrays
-    containing the 3-D coordinates of each atom. The charges should be
-    the corresponding charge for each atom, so that charges[i] should be
-    the charge on the atom at position coords[i]. n is the maximum number
-    of reps to take. If n is "full" (case insensitive), 0, or None, this
-    will return all the values, rather than cutting off. cutoff is the
-    numeric cutoff for the values. If cutoff is set and n is set but not 0,
-    None, or "full", then the function will return up to n values all above
-    the cutoff. If ignore_matrix_symmetry is set to true, as it is by default,
-    then the fact that the coulomb matrix is symmetric will be ignored. This
-    means that all except the diagonal elements will be included twice. If it
-    is set to false, then the symmetry is taken into account.
+    Returns the Coulomb matrix. When given options, the output is the flattened matrix. Passing in sort will sort the values
+    so that the biggest is first. Passing in ignore_matrix_symmetry as False will cause the return value to be the flattened
+    triangular matrix, thus removing duplicates. Passing in n cuts off the lowest values in the matrix until the total is 
+    n. Passing in cutoff will cause the array to remove all values less than that cutoff. Passing in both will cut off the 
+    greater number of indices from cutting off at n and cutting off values less than cutoff. These two options require sort
+    to be True.
 
     Default values:
     ignore_matrix_symmetry = True
