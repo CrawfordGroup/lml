@@ -8,6 +8,7 @@ O
 H 1 1
 H 1 1 2 104.5
 noreorient
+symmetry c1
 """)
 
 psi4.set_options({'basis':'cc-pVDZ','scf_type':'df','freeze_core':'false','e_convergence':1e-08,'d_convergence':1e-08})

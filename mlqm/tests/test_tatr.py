@@ -1,6 +1,12 @@
 import numpy as np
 import mlqm
-import sklearn as skl
 
 def test_tatr():
-    pass
+    amps = mlqm.datahelper.harvest_amps('MP2',namps=500,outfile="./outputs/h2o_out.dat")
+    tatr = mlqm.repgen.make_tatr('mp2',amps['t2'])
+    ref = np.load('./outputs/h2o_tatr.npy')
+
+    assert np.allclose(tatr,ref), "TATR does not match reference."
+
+if __name__ == "__main__":
+    test_tatr()
