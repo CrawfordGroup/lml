@@ -1,0 +1,23 @@
+import psi4
+import numpy as np
+import json
+psi4.core.set_output_file("h2o_out.dat")
+
+mol = psi4.geometry("""
+O
+H 1 1
+H 1 1 2 104.5
+noreorient
+""")
+
+psi4.set_options({'basis':'cc-pVDZ','scf_type':'df','freeze_core':'false','e_convergence':1e-08,'d_convergence':1e-08})
+
+psi4.set_module_options('CCENERGY',{'MP2_AMPS_PRINT':True,'NUM_AMPS_PRINT':10000})
+
+e, mp2_wfn = psi4.energy('MP2',return_wfn=True)
+e, ccsd_wfn = psi4.energy('CCSD',return_wfn=True)
+
+D = np.add(mp2_wfn.Da_subset("MO").to_array(),mp2_wfn.Da_subset("MO").to_array())
+np.save('h2o_D.npy',D)
+with open("h2o.json","w") as df:
+    json.dump(psi4.core.variables(),df,indent=4)
