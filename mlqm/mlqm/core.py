@@ -8,6 +8,7 @@ import copy
 from . import train
 from . import datahelper
 from . import krr
+import os
 
 class Mol_Set(object):
     """
@@ -125,11 +126,34 @@ class PES(object):
     Run pes.generate() to generate input files across the PES, and pes.run()
     to automatically go through the directories and run each input file.
     Check the respective fn docstrings to see extra capabilities.
+
+    Keyword Args:
+    raise_on_error = True :
+        Whether to raise an error when the input file is not found (True),
+        or to make an empty PES if it is not found (False).
     """
 
-    def __init__(self,inp):
+    def __init__(self,inp, **kwargs):
     # {{{
         if isinstance(inp,str): # if str, unpack it as a json file
+            if not os.path.isfile(inp) and \
+               (("raise_on_error" in kwargs and kwargs["raise_on_error"])
+                or "raise_on_error" not in kwargs) :
+                raise FileNotFoundError(f"Could not find the file {inp}:"
+                                        + " Can not create PES")
+            elif not os.path.isfile(inp) and ("raise_on_error" in kwargs and
+                                              not kwargs["raise_on_error"]) :
+                print(f"Could not find the file {inp}: Initializing empty PES")
+                self.geom = None
+                self.gvar = None
+                self.dis = None
+                self.pts = None
+                self.method = None
+                self.basis = None
+                self.generated = None
+                self.complete = None
+                self.inpf = inp
+                return
             with open(inp) as f:
                 inpf = json.load(f)
             self.inpf = inp
@@ -297,9 +321,14 @@ class Dataset(object):
     Maybe I should have a higher class than this, which holds things like the 
     training type, number of trainers (M), etc? Or should I pass the input file
     directly here?
+
+    Keyword Args:
+    raise_on_error = True :
+        Whether to raise an error when the input file is not found (True),
+        or to make an empty Dataset if it is not found (False).
     """
 
-    def __init__(self, inpf=None, reps=None, vals=None):
+    def __init__(self, inpf=None, reps=None, vals=None, **kwargs):
     # {{{
         """
         Initialize the dataset. Pass in a data set or the location of one.
@@ -312,6 +341,18 @@ class Dataset(object):
 
         if inpf is not None:
             if isinstance(inpf,str):
+                if not os.path.isfile(inpf) and \
+                   (("raise_on_error" in kwargs and kwargs["raise_on_error"]) or
+                     "raise_on_error" not in kwargs) :
+                    raise FileNotFoundError(f"Could not find the file {inpf}:"
+                                        + " Can not create Dataset.")
+                elif not os.path.isfile(inpf) and \
+                    ("raise_on_error" in kwargs and not kwargs["raise_on_error"]):
+                     print(f"Could not find the file {inpf}: Initializing empty"
+                           + " Dataset")
+                     self.inpf = inpf
+                     self.setup = None
+                     self.data = None
                 with open(inpf,'r') as f:
                     inp = json.load(f)
                 self.inpf = inpf
