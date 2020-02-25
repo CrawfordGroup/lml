@@ -1,8 +1,0 @@
-{
-    "members": [
-	"BeO", "Br2", "CaO", "Cl2", "ClBr", "CO", "F2",
-	"FBr", "FCl", "H2", "HBr", "HCl", "HF", "KBr", "KCl",
-	"LiBr", "LiCl", "LiF", "LiH", "MgO", "N2", "NaBr", "NaCl",
-	"NaF", "NaH", "O2"
-    ]
-}
