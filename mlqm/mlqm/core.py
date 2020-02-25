@@ -364,6 +364,9 @@ class Dataset(object):
                 self.data = inpf['data']
             else:
                 print("Please pass in either a STR json filepath or DICT.")
+        else:
+            self.setup = None
+            self.data = None
 
         if reps is not None:
             if isinstance(reps,str):
@@ -386,11 +389,14 @@ class Dataset(object):
             else:
                 raise RuntimeError("""Please pass in a STR numpy filepath, numpy.ndarray, or 
                         list of values.""")
-        if (inpf == None) and (reps == None) and (vals == None):
-            self.inpf = None
-            self.setup = {}
-            self.data = {}
-            print("Empty Dataset loaded.")
+        try:
+            if (inpf == None) and (reps == None) and (vals == None):
+                self.inpf = None
+                self.setup = {}
+                self.data = {}
+                print("Empty Dataset loaded.")
+        except:
+            print("Partial Dataset loaded.")
     # }}}
 
     def load(self, inpf=None, reps=None, vals=None):
