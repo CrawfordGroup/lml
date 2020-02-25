@@ -1,0 +1,4 @@
+H2O in cc-pvdz basis
+TATR built with highest 150 amplitudes (by magnitude), no additional cutoffs
+DTR built with all OPDM elements, no additional cutoffs
+less_amps output is cut down to 10 amplitudes (to check amplitude harvesting)
