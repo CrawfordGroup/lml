@@ -5,8 +5,8 @@ from sklearn.kernel_ridge import KernelRidge
 from sklearn.model_selection import GridSearchCV
 
 def test_krr_wrap():
-    reps = np.load('datasets/h2_coul/coulombs.npy')
-    mp2_E = np.load('datasets/h2_coul/mp2_E.npy')
+    reps = np.load('tests/datasets/h2_coul/coulombs.npy')
+    mp2_E = np.load('tests/datasets/h2_coul/mp2_E.npy')
 
     # train on first 10 points, predict remaining 90
     trainers = [i for i in range(0,10)]
