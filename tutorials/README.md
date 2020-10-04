@@ -11,3 +11,4 @@ These are generally Jupyter notebooks designed to walk the reader through variou
 * * Model an arbitrary polynomial curve by statistically regressing in a high-dimensional feature space with a set of coefficients spread across a chosen prior distribution.
 * Machine-learning with Psi4
 * * Generate a set of diatomic potential energy surface data with [psi4](github.com/psi4/psi4), then generate a model to predict additional points from geometric descriptors.
+* * A more in-depth version of this tutorial has been added to the [Psi4Education](https://github.com/Psi4Education/psi4education/tree/master/labs/Machine_Learning) project!
